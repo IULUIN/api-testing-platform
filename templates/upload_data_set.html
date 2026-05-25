@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}上传数据集 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="/data-sets" class="btn" style="padding: 0.7rem 1.5rem; font-size: 15px; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        ← 返回数据集列表
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">📤 上传数据集</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">支持Excel (.xlsx, .xls) 和 CSV 格式</p>
+</div>
+
+<div class="card">
+    <form action="/data-sets/upload" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">
+                <strong>1️⃣ 数据集名称</strong> <span style="color: red;">*</span>
+            </label>
+            <input type="text" id="name" name="name" required
+                   placeholder="例如：用户测试数据">
+            <small style="color: #7f8c8d;">给这个数据集起个名字，方便以后查找</small>
+        </div>
+
+        <div class="form-group">
+            <label for="description">
+                <strong>2️⃣ 数据集描述</strong> <span style="color: #999;">选填</span>
+            </label>
+            <textarea id="description" name="description" rows="2"
+                      placeholder="这个数据集是用来做什么的？"></textarea>
+            <small style="color: #7f8c8d;">写一些备注，方便以后查看</small>
+        </div>
+
+        <div class="form-group">
+            <label for="file">
+                <strong>3️⃣ 选择文件</strong> <span style="color: red;">*</span>
+            </label>
+            <input type="file" id="file" name="file" required
+                   accept=".xlsx,.xls,.csv">
+            <small style="color: #7f8c8d;">
+                <strong>支持格式：</strong>Excel (.xlsx, .xls) 或 CSV (.csv)<br>
+                <strong>文件大小：</strong>最大 5MB<br>
+                <strong>文件要求：</strong>第一行必须是列名，后续行为数据
+            </small>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #eee;">
+            <button type="submit" class="btn btn-success" style="font-size: 1.1rem; padding: 0.7rem 2rem;">
+                ✅ 上传数据集
+            </button>
+            <a href="/data-sets" class="btn" style="margin-left: 1rem;">
+                取消
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- 文件格式说明 -->
+<div class="card" style="margin-top: 2rem;">
+    <h2>📋 文件格式要求</h2>
+
+    <h3 style="color: #3498db; margin-top: 1.5rem;">Excel格式示例</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>user_id</th>
+                <th>username</th>
+                <th>password</th>
+                <th>email</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>test1</td>
+                <td>pass123</td>
+                <td>test1@example.com</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>test2</td>
+                <td>pass456</td>
+                <td>test2@example.com</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>test3</td>
+                <td>pass789</td>
+                <td>test3@example.com</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 style="color: #27ae60; margin-top: 1.5rem;">CSV格式示例</h3>
+    <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto;">user_id,username,password,email
+1,test1,pass123,test1@example.com
+2,test2,pass456,test2@example.com
+3,test3,pass789,test3@example.com</pre>
+
+    <h3 style="color: #e74c3c; margin-top: 1.5rem;">⚠️ 注意事项</h3>
+    <ul style="line-height: 2; color: #666;">
+        <li>第一行必须是列名（变量名）</li>
+        <li>列名不能包含特殊字符，建议使用英文和下划线</li>
+        <li>数据行不能全部为空</li>
+        <li>文件大小不能超过5MB</li>
+        <li>Excel文件建议使用.xlsx格式</li>
+    </ul>
+</div>
+
+<!-- 使用说明 -->
+<div class="card" style="margin-top: 1rem; background: linear-gradient(135deg, #e0f7fa 0%, #e1bee7 100%); border: none;">
+    <h2 style="color: #333;">💡 如何使用数据集</h2>
+    <div style="line-height: 2; color: #555;">
+        <p><strong>第1步：</strong>上传数据集后，在测试用例中使用变量</p>
+        <p><strong>第2步：</strong>变量格式：<code>{{"{{"}}列名{{"}}"}}</code> 或 <code>${"{"}列名{"}"}</code></p>
+        <p><strong>第3步：</strong>例如URL：<code>https://api.com/users/{{"{{"}}user_id{{"}}"}}</code></p>
+        <p><strong>第4步：</strong>选择数据集执行，系统会自动替换变量</p>
+    </div>
+</div>
+
+{% endblock %}

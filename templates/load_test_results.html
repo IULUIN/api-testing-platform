@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}压测结果 - {{ load_test.name }}{% endblock %}
+
+{% block content %}
+<style>
+.result-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+.result-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    padding: 24px 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.result-header h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+}
+
+.result-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.results-table {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.results-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-table th,
+.results-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.results-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+}
+
+.results-table tr:hover {
+    background: #f8f9fa;
+}
+
+.metric-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.metric-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.metric-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.metric-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+</style>
+
+<div class="result-container">
+    <div class="result-header">
+        <h2>📊 {{ load_test.name }} - 压测结果</h2>
+        <p>并发用户: {{ load_test.concurrent_users }} | 持续时间: {{ load_test.duration }}秒 | Ramp-up: {{ load_test.ramp_up_time }}秒</p>
+    </div>
+
+    <div class="results-table">
+        {% if results %}
+        <div style="margin-bottom: 16px;">
+            <a href="/load-tests/{{ load_test.id }}/compare" class="btn" style="background:#667eea">📊 对比分析</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>执行时间</th>
+                    <th>总请求数</th>
+                    <th>成功率</th>
+                    <th>平均响应时间</th>
+                    <th>TPS</th>
+                    <th>P95</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>{{ result.executed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ result.total_requests }}</td>
+                    <td>
+                        {% set success_rate = (result.success_requests / result.total_requests * 100) if result.total_requests > 0 else 0 %}
+                        <span class="metric-badge {% if success_rate >= 95 %}metric-success{% elif success_rate >= 80 %}metric-warning{% else %}metric-danger{% endif %}">
+                            {{ "%.1f"|format(success_rate) }}%
+                        </span>
+                    </td>
+                    <td>{{ "%.2f"|format(result.avg_response_time * 1000) }} ms</td>
+                    <td>{{ "%.2f"|format(result.tps) }}</td>
+                    <td>{{ "%.2f"|format(result.p95_response_time * 1000) }} ms</td>
+                    <td>
+                        <a href="/load-tests/results/{{ result.id }}" class="btn btn-small" style="background:#17a2b8">查看详情</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <h3>还没有执行记录</h3>
+            <p>返回列表页执行压测任务</p>
+            <br>
+            <a href="/load-tests" class="btn btn-success">返回列表</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="/load-tests" class="btn" style="background:#6c757d">返回列表</a>
+    </div>
+</div>
+{% endblock %}

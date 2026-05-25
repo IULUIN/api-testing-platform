@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}压测详情{% endblock %}
+
+{% block content %}
+<style>
+.detail-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+.detail-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.detail-header h2 {
+    margin: 0 0 8px;
+    font-size: 26px;
+}
+
+.detail-header .meta {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* KPI卡片 */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.kpi-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    border-top: 4px solid #f093fb;
+}
+
+.kpi-card.green { border-top-color: #28a745; }
+.kpi-card.blue { border-top-color: #17a2b8; }
+.kpi-card.orange { border-top-color: #fd7e14; }
+.kpi-card.red { border-top-color: #dc3545; }
+
+.kpi-val {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.kpi-val.green { color: #28a745; }
+.kpi-val.blue { color: #17a2b8; }
+.kpi-val.orange { color: #fd7e14; }
+.kpi-val.red { color: #dc3545; }
+
+.kpi-lbl {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 图表区域 */
+.chart-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.chart-section h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: #2c3e50;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f093fb;
+}
+
+.chart-box {
+    width: 100%;
+    height: 400px;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+</style>
+
+<div class="detail-container">
+    <!-- 头部 -->
+    <div class="detail-header">
+        <h2>⚡ {{ result.load_test_name }}</h2>
+        <div class="meta">
+            执行时间: {{ result.executed_at.strftime('%Y-%m-%d %H:%M:%S') }} |
+            目标接口: {{ result.test_case_name }}
+        </div>
+    </div>
+
+    <!-- KPI指标 -->
+    <div class="kpi-grid">
+        <div class="kpi-card green">
+            <div class="kpi-val green">{{ result.total_requests }}</div>
+            <div class="kpi-lbl">总请求数</div>
+        </div>
+
+        <div class="kpi-card {% if result.success_requests / result.total_requests >= 0.95 %}green{% elif result.success_requests / result.total_requests >= 0.8 %}orange{% else %}red{% endif %}">
+            <div class="kpi-val {% if result.success_requests / result.total_requests >= 0.95 %}green{% elif result.success_requests / result.total_requests >= 0.8 %}orange{% else %}red{% endif %}">
+                {{ "%.1f"|format((result.success_requests / result.total_requests * 100) if result.total_requests > 0 else 0) }}%
+            </div>
+            <div class="kpi-lbl">成功率</div>
+        </div>
+
+        <div class="kpi-card blue">
+            <div class="kpi-val blue">{{ "%.2f"|format(result.tps) }}</div>
+            <div class="kpi-lbl">TPS (每秒事务数)</div>
+        </div>
+
+        <div class="kpi-card orange">
+            <div class="kpi-val orange">{{ "%.2f"|format(result.avg_response_time * 1000) }}</div>
+            <div class="kpi-lbl">平均响应时间 (ms)</div>
+        </div>
+
+        <div class="kpi-card purple">
+            <div class="kpi-val purple">{{ "%.2f"|format(result.received_bytes_per_sec) }}</div>
+            <div class="kpi-lbl">接收速率 (KB/s)</div>
+        </div>
+
+        <div class="kpi-card purple">
+            <div class="kpi-val purple">{{ "%.2f"|format(result.sent_bytes_per_sec) }}</div>
+            <div class="kpi-lbl">发送速率 (KB/s)</div>
+        </div>
+    </div>
+
+    <!-- 响应时间百分位 -->
+    <div class="chart-section">
+        <h3>📊 响应时间分布</h3>
+        <div class="two-col">
+            <div>
+                <table style="width:100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; color: #666;">最小响应时间</td>
+                        <td style="padding: 12px; font-weight: 600; text-align: right;">{{ "%.2f"|format(result.min_response_time * 1000) }} ms</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; color: #666;">P50 (中位数)</td>
+                        <td style="padding: 12px; font-weight: 600; text-align: right;">{{ "%.2f"|format(result.p50_response_time * 1000) }} ms</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; color: #666;">P90</td>
+                        <td style="padding: 12px; font-weight: 600; text-align: right;">{{ "%.2f"|format(result.p90_response_time * 1000) }} ms</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; color: #666;">P95</td>
+                        <td style="padding: 12px; font-weight: 600; text-align: right;">{{ "%.2f"|format(result.p95_response_time * 1000) }} ms</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; color: #666;">P99</td>
+                        <td style="padding: 12px; font-weight: 600; text-align: right;">{{ "%.2f"|format(result.p99_response_time * 1000) }} ms</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; color: #666;">最大响应时间</td>
+                        <td style="padding: 12px; font-weight: 600; text-align: right;">{{ "%.2f"|format(result.max_response_time * 1000) }} ms</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="percentileChart" class="chart-box" style="height: 300px;"></div>
+        </div>
+    </div>
+
+    <!-- 时序图表 -->
+    {% if result.time_series_data %}
+    <div class="chart-section">
+        <h3>📈 时序数据</h3>
+        <div id="timeSeriesChart" class="chart-box"></div>
+    </div>
+    {% endif %}
+
+    <!-- 测试配置 -->
+    <div class="chart-section">
+        <h3>⚙️ 测试配置</h3>
+        <table style="width:100%; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; color: #666; width: 30%;">并发用户数</td>
+                <td style="padding: 12px; font-weight: 600;">{{ result.concurrent_users }} 个</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; color: #666;">持续时间</td>
+                <td style="padding: 12px; font-weight: 600;">{{ result.duration }} 秒</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; color: #666;">Ramp-up时间</td>
+                <td style="padding: 12px; font-weight: 600;">{{ result.ramp_up_time }} 秒</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; color: #666;">成功请求</td>
+                <td style="padding: 12px; font-weight: 600; color: #28a745;">{{ result.success_requests }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; color: #666;">失败请求</td>
+                <td style="padding: 12px; font-weight: 600; color: #dc3545;">{{ result.failed_requests }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; color: #666;">总接收数据</td>
+                <td style="padding: 12px; font-weight: 600;">{{ "%.2f"|format(result.total_received_bytes / 1024) }} KB</td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; color: #666;">总发送数据</td>
+                <td style="padding: 12px; font-weight: 600;">{{ "%.2f"|format(result.total_sent_bytes / 1024) }} KB</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <a href="/load-tests/results/{{ result.id }}/export/excel" class="btn btn-success">📥 导出Excel</a>
+        <a href="/load-tests/results/{{ result.id }}/print" class="btn" style="background:#dc3545;color:#fff" target="_blank">📄 导出PDF</a>
+        <a href="/load-tests/{{ result.load_test_id }}/results" class="btn" style="background:#6c757d">返回结果列表</a>
+        <a href="/load-tests" class="btn" style="background:#6c757d">返回压测列表</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+// 百分位图表
+const percentileChart = echarts.init(document.getElementById('percentileChart'));
+percentileChart.setOption({
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+        type: 'category',
+        data: ['Min', 'P50', 'P90', 'P95', 'P99', 'Max']
+    },
+    yAxis: {
+        type: 'value',
+        name: '响应时间 (ms)'
+    },
+    series: [{
+        data: [
+            {{ result.min_response_time * 1000 }},
+            {{ result.p50_response_time * 1000 }},
+            {{ result.p90_response_time * 1000 }},
+            {{ result.p95_response_time * 1000 }},
+            {{ result.p99_response_time * 1000 }},
+            {{ result.max_response_time * 1000 }}
+        ],
+        type: 'bar',
+        itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#f093fb' },
+                { offset: 1, color: '#f5576c' }
+            ])
+        }
+    }]
+});
+
+{% if result.time_series_data %}
+// 时序图表
+const timeSeriesData = {{ result.time_series_data | safe }};
+const timestamps = timeSeriesData.map(d => d.timestamp + 's');
+const requests = timeSeriesData.map(d => d.requests);
+const activeUsers = timeSeriesData.map(d => d.active_users);
+
+const timeSeriesChart = echarts.init(document.getElementById('timeSeriesChart'));
+timeSeriesChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['每秒请求数', '活跃用户数'] },
+    xAxis: {
+        type: 'category',
+        data: timestamps
+    },
+    yAxis: [
+        {
+            type: 'value',
+            name: '请求数',
+            position: 'left'
+        },
+        {
+            type: 'value',
+            name: '用户数',
+            position: 'right'
+        }
+    ],
+    series: [
+        {
+            name: '每秒请求数',
+            type: 'line',
+            data: requests,
+            smooth: true,
+            itemStyle: { color: '#f5576c' }
+        },
+        {
+            name: '活跃用户数',
+            type: 'line',
+            yAxisIndex: 1,
+            data: activeUsers,
+            smooth: true,
+            itemStyle: { color: '#17a2b8' }
+        }
+    ]
+});
+{% endif %}
+
+// 响应式调整
+window.addEventListener('resize', () => {
+    percentileChart.resize();
+    {% if result.time_series_data %}
+    timeSeriesChart.resize();
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}测试用例管理 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2rem; border-left: 5px solid #2196f3; box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="font-size: 2.5rem;">📝</div>
+        <div>
+            <h2 style="margin: 0 0 0.3rem 0; color: #1565c0; font-size: 1.3rem;">测试用例管理</h2>
+            <p style="margin: 0; color: #1976d2; font-size: 0.95rem;">在这里可以添加、编辑、删除和执行测试用例</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <h1 style="margin: 0; font-size: 1.8rem; color: #2c3e50;">📋 我的测试用例</h1>
+    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <a href="/test-cases/doc-generator" class="btn" style="font-size: 1rem; padding: 0.65rem 1.3rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; box-shadow: 0 2px 6px rgba(240, 147, 251, 0.3);">
+            📝 生成测试文档
+        </a>
+        <a href="/test-cases/smart-create-page" class="btn" style="font-size: 1rem; padding: 0.65rem 1.3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);">
+            🤖 智能创建
+        </a>
+        <a href="/test-cases/add" class="btn btn-success" style="font-size: 1rem; padding: 0.65rem 1.3rem; box-shadow: 0 2px 6px rgba(39, 174, 96, 0.3);">
+            ➕ 手动添加
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    {% if cases %}
+    <div style="margin-bottom: 1.2rem; padding: 1rem 1.2rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; border-left: 4px solid #6c757d;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <div style="font-size: 1.5rem;">💡</div>
+            <div>
+                <p style="margin: 0; color: #495057; font-size: 0.95rem; line-height: 1.6;">
+                    <strong style="color: #343a40;">操作说明：</strong>
+                    点击 <span style="color: #27ae60; font-weight: 600;">执行</span> 测试接口 ·
+                    点击 <span style="color: #3498db; font-weight: 600;">编辑</span> 修改用例 ·
+                    点击 <span style="color: #e74c3c; font-weight: 600;">删除</span> 移除用例
+                </p>
+            </div>
+        </div>
+    </div>
+    <table style="table-layout: fixed; width: 100%;">
+        <colgroup>
+            <col style="width: 50px;">
+            <col style="width: auto;">
+            <col style="width: 200px;">
+            <col style="width: 75px;">
+            <col style="width: 85px;">
+            <col style="width: 135px;">
+            <col style="width: 200px;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th style="white-space: nowrap;">#</th>
+                <th>用例名称</th>
+                <th style="white-space: nowrap;">接口地址</th>
+                <th style="white-space: nowrap;">方式</th>
+                <th style="white-space: nowrap;">期望码</th>
+                <th style="white-space: nowrap;">创建时间</th>
+                <th style="white-space: nowrap;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for case in cases %}
+            <tr>
+                <td style="white-space: nowrap; color: #999; font-size: 13px;">{{ loop.index + (page - 1) * 20 }}</td>
+                <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ case.name }}">{{ case.name }}</td>
+                <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #555;" title="{{ case.url }}">{{ case.url }}</td>
+                <td style="white-space: nowrap;">
+                    <span style="background: #3498db; color: white; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: bold; font-size: 11px;">
+                        {{ case.method }}
+                    </span>
+                </td>
+                <td style="white-space: nowrap; text-align: center;">{{ case.expected_status }}</td>
+                <td style="white-space: nowrap; font-size: 12px; color: #666;">{{ case.created_at.strftime('%m-%d %H:%M') }}</td>
+                <td style="white-space: nowrap;">
+                    <button onclick="runTest({{ case.id }})" class="btn btn-success btn-small" title="执行测试" style="padding: 0.3rem 0.5rem; font-size: 12px;">▶</button>
+                    <a href="/test-cases/{{ case.id }}/edit" class="btn btn-small" title="编辑用例" style="padding: 0.3rem 0.5rem; font-size: 12px;">✏</a>
+                    <button onclick="deleteCase({{ case.id }})" class="btn btn-danger btn-small" title="删除用例" style="padding: 0.3rem 0.5rem; font-size: 12px;">🗑</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 分页组件 -->
+    {% if total_pages > 1 %}
+    <div style="margin-top: 2rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 4px;">
+        <div style="color: #666;">
+            共 <strong>{{ total }}</strong> 条记录，第 <strong>{{ page }}</strong> / <strong>{{ total_pages }}</strong> 页
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            {% if page > 1 %}
+            <a href="?page=1" class="btn btn-small">首页</a>
+            <a href="?page={{ page - 1 }}" class="btn btn-small">上一页</a>
+            {% endif %}
+
+            {% for p in range([1, page - 2]|max, [total_pages, page + 2]|min + 1) %}
+                {% if p == page %}
+                <span class="btn btn-small" style="background: #3498db; color: white;">{{ p }}</span>
+                {% else %}
+                <a href="?page={{ p }}" class="btn btn-small">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}" class="btn btn-small">下一页</a>
+            <a href="?page={{ total_pages }}" class="btn btn-small">末页</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="text-align: center; padding: 4rem 2rem;">
+        <div style="font-size: 5rem; margin-bottom: 1.5rem; opacity: 0.6;">📋</div>
+        <h3 style="font-size: 1.5rem; color: #7f8c8d; margin-bottom: 1rem; font-weight: 600;">
+            还没有测试用例
+        </h3>
+        <p style="color: #95a5a6; margin-bottom: 2rem; font-size: 1.05rem; line-height: 1.6;">
+            点击上方的"手动添加"或"智能创建"按钮<br>创建你的第一个测试用例
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/test-cases/add" class="btn btn-success" style="font-size: 1.1rem; padding: 0.8rem 2rem; box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);">
+                ➕ 立即添加
+            </a>
+            <a href="/test-cases/smart-create-page" class="btn" style="font-size: 1.1rem; padding: 0.8rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);">
+                🤖 智能创建
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div id="result-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; max-width: 800px; margin: 50px auto; padding: 2rem; border-radius: 8px; max-height: 80vh; overflow-y: auto;">
+        <h2>📊 测试结果</h2>
+        <div id="result-content"></div>
+        <button onclick="closeModal()" class="btn" style="margin-top: 1rem;">关闭</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 加载环境列表
+let environments = [];
+let selectedEnvId = null;
+
+// 页面加载时获取环境列表
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/environments')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                environments = data.environments;
+                // 设置默认环境
+                const defaultEnv = environments.find(e => e.is_default);
+                if (defaultEnv) {
+                    selectedEnvId = defaultEnv.id;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load environments:', error);
+        });
+});
+
+function runTest(caseId) {
+    // 如果有环境配置，显示环境选择
+    if (environments.length > 0) {
+        showEnvironmentSelector(caseId);
+    } else {
+        // 没有环境配置，直接执行
+        executeTest(caseId, null);
+    }
+}
+
+function showEnvironmentSelector(caseId) {
+    let envOptions = '<option value="">不使用环境（使用原始URL）</option>';
+    environments.forEach(env => {
+        const selected = env.id === selectedEnvId ? 'selected' : '';
+        const defaultTag = env.is_default ? ' ⭐' : '';
+        envOptions += `<option value="${env.id}" ${selected}>${env.name}${defaultTag}</option>`;
+    });
+
+    const html = `
+        <div id="env-selector-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%;">
+                <h3 style="margin: 0 0 1rem 0;">选择测试环境</h3>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;"><strong>环境：</strong></label>
+                    <select id="env-select" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        ${envOptions}
+                    </select>
+                    <small style="color: #666; display: block; margin-top: 0.5rem;">
+                        选择环境后，测试用例中的变量（如{{"{{"}}base_url{{"}}"}}）会被替换
+                    </small>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="confirmEnvironment(${caseId})" class="btn btn-success" style="flex: 1;">
+                        ▶ 执行测试
+                    </button>
+                    <button onclick="closeEnvironmentSelector()" class="btn" style="flex: 1;">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeEnvironmentSelector() {
+    const modal = document.getElementById('env-selector-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function confirmEnvironment(caseId) {
+    const select = document.getElementById('env-select');
+    const envId = select.value ? parseInt(select.value) : null;
+    selectedEnvId = envId; // 记住选择
+    closeEnvironmentSelector();
+    executeTest(caseId, envId);
+}
+
+function executeTest(caseId, envId) {
+    // 显示加载提示
+    const loadingMsg = envId ?
+        `正在使用环境执行测试，请稍候...` :
+        `正在执行测试，请稍候...`;
+
+    alert(loadingMsg);
+
+    const requestBody = envId ? JSON.stringify({ env_id: envId }) : null;
+    const headers = envId ? { 'Content-Type': 'application/json' } : {};
+
+    fetch(`/test-cases/${caseId}/run`, {
+        method: 'POST',
+        headers: headers,
+        body: requestBody
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showResult(data.result);
+        } else {
+            alert('❌ 执行失败: ' + (data.error || '未知错误'));
+        }
+    })
+    .catch(error => {
+        alert('❌ 请求失败: ' + error);
+    });
+}
+
+function showResult(result) {
+    const statusClass = result.status === 'success' ? 'status-success' :
+                       result.status === 'failed' ? 'status-failed' : 'status-error';
+
+    const statusText = result.status === 'success' ? '✅ 测试成功' :
+                      result.status === 'failed' ? '❌ 测试失败' : '⚠️ 测试错误';
+
+    const html = `
+        <div style="margin-top: 1rem;">
+            <div style="padding: 1rem; background: ${result.status === 'success' ? '#d4edda' : '#f8d7da'}; border-radius: 4px; margin-bottom: 1rem;">
+                <p style="margin: 0; font-size: 1.2rem;"><strong>${statusText}</strong></p>
+            </div>
+
+            <p><strong>📝 用例名称:</strong> ${result.test_case_name}</p>
+            <p><strong>📊 测试状态:</strong> <span class="${statusClass}">${statusText}</span></p>
+            <p><strong>🔢 实际状态码:</strong> ${result.actual_status}</p>
+            <p><strong>⏱️ 响应时间:</strong> ${result.response_time}秒</p>
+            ${result.error_message ? `<p><strong>❌ 错误信息:</strong> <span style="color: #e74c3c;">${result.error_message}</span></p>` : ''}
+
+            <p><strong>📄 响应内容:</strong></p>
+            <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto; max-height: 300px;">${result.response_body}</pre>
+
+            <div style="margin-top: 1rem; padding: 0.8rem; background: #e3f2fd; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.9rem; color: #1565c0;">
+                    💡 <strong>提示：</strong>可以在"测试报告"页面查看所有历史测试记录
+                </p>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('result-content').innerHTML = html;
+    document.getElementById('result-modal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('result-modal').style.display = 'none';
+}
+
+function deleteCase(caseId) {
+    if (!confirm('⚠️ 确定要删除这个测试用例吗？\n\n删除后无法恢复！')) {
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/test-cases/${caseId}/delete`;
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

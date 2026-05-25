@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}批量测试结果 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <a href="/data-sets" class="btn" style="padding: 0.7rem 1.5rem; font-size: 15px; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        ← 返回数据集列表
+    </a>
+    <a href="/performance-report/{{ batch_result.id }}" class="btn btn-success" style="padding: 0.7rem 1.5rem; font-size: 15px; text-decoration: none;">
+        📊 查看性能报告
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">📊 批量测试结果</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">{{ batch_result.test_case_name }}</p>
+</div>
+
+<!-- 汇总统计 -->
+<div class="stats" style="margin-bottom: 2rem;">
+    <div class="stat-card">
+        <h3>{{ batch_result.total_count }}</h3>
+        <p>总执行次数</p>
+        <small style="color: #7f8c8d;">数据集行数</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: #27ae60;">{{ batch_result.success_count }}</h3>
+        <p>✅ 成功</p>
+        <small style="color: #7f8c8d;">{{ "%.1f"|format((batch_result.success_count / batch_result.total_count * 100) if batch_result.total_count > 0 else 0) }}%</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: #e74c3c;">{{ batch_result.failed_count }}</h3>
+        <p>❌ 失败</p>
+        <small style="color: #7f8c8d;">{{ "%.1f"|format((batch_result.failed_count / batch_result.total_count * 100) if batch_result.total_count > 0 else 0) }}%</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: #f39c12;">{{ batch_result.error_count }}</h3>
+        <p>⚠️ 错误</p>
+        <small style="color: #7f8c8d;">{{ "%.1f"|format((batch_result.error_count / batch_result.total_count * 100) if batch_result.total_count > 0 else 0) }}%</small>
+    </div>
+</div>
+
+<!-- 详细结果 -->
+<div class="card">
+    <h2>📋 详细结果</h2>
+
+    {% if results %}
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 60px;">序号</th>
+                <th>测试名称</th>
+                <th style="width: 100px;">状态</th>
+                <th style="width: 100px;">状态码</th>
+                <th style="width: 120px;">响应时间</th>
+                <th style="width: 150px;">执行时间</th>
+                <th style="width: 100px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td style="text-align: center; color: #999;">{{ loop.index }}</td>
+                <td>{{ result.test_case_name }}</td>
+                <td>
+                    {% if result.status == 'success' %}
+                    <span class="status-success">✅ 成功</span>
+                    {% elif result.status == 'failed' %}
+                    <span class="status-failed">❌ 失败</span>
+                    {% else %}
+                    <span class="status-error">⚠️ 错误</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">{{ result.actual_status }}</td>
+                <td style="text-align: center;">{{ result.response_time }}秒</td>
+                <td style="text-align: center; font-size: 0.85rem;">{{ result.executed_at }}</td>
+                <td style="text-align: center;">
+                    <button onclick="showDetail({{ result.id }})" class="btn" style="padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                        查看
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; color: #999; padding: 2rem;">没有结果数据</p>
+    {% endif %}
+</div>
+
+<!-- 性能报告说明 -->
+<div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%); border: none;">
+    <h2 style="color: #333;">💡 性能报告说明</h2>
+    <div style="line-height: 2; color: #555;">
+        <p><strong>📊 什么是性能报告？</strong></p>
+        <p style="margin-left: 1rem;">性能报告会分析批量测试的响应时间、成功率等指标，生成可视化图表和统计数据。</p>
+
+        <p style="margin-top: 1rem;"><strong>🎯 如何查看性能报告？</strong></p>
+        <p style="margin-left: 1rem;">点击页面右上角的"📊 查看性能报告"按钮，即可查看本次批量测试的详细性能分析。</p>
+
+        <p style="margin-top: 1rem;"><strong>📈 报告包含哪些内容？</strong></p>
+        <ul style="margin-left: 2rem;">
+            <li>响应时间趋势图</li>
+            <li>成功率分布和仪表盘</li>
+            <li>百分位响应时间对比（P50/P90/P95/P99）</li>
+            <li>响应时间分布直方图</li>
+            <li>详细统计数据表格</li>
+        </ul>
+
+        <p style="margin-top: 1rem;"><strong>🖨️ 如何导出报告？</strong></p>
+        <p style="margin-left: 1rem;">在性能报告页面点击"🖨️ 打印报告"按钮，选择"另存为PDF"即可导出专业报告。</p>
+    </div>
+</div>
+
+<!-- 详情模态框 -->
+<div id="detail-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; max-width: 900px; margin: 50px auto; padding: 2rem; border-radius: 8px; max-height: 80vh; overflow-y: auto;">
+        <h2>🔍 测试详细信息</h2>
+        <div id="detail-content"></div>
+        <button onclick="closeModal()" class="btn" style="margin-top: 1rem;">关闭</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const resultsData = {{ results | tojson | safe }};
+
+function showDetail(resultId) {
+    const result = resultsData.find(r => r.id === resultId);
+    if (!result) {
+        alert('❌ 未找到测试结果');
+        return;
+    }
+
+    const statusClass = result.status === 'success' ? 'status-success' :
+                       result.status === 'failed' ? 'status-failed' : 'status-error';
+
+    const statusText = result.status === 'success' ? '✅ 测试成功' :
+                      result.status === 'failed' ? '❌ 测试失败' : '⚠️ 测试错误';
+
+    const statusBg = result.status === 'success' ? '#d4edda' : '#f8d7da';
+
+    // 解析断言结果
+    let assertionHtml = '';
+    if (result.assertion_results) {
+        try {
+            const assertions = JSON.parse(result.assertion_results);
+            assertionHtml = `
+                <h3 style="margin-top: 1.5rem;">断言结果：</h3>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+            `;
+            assertions.forEach((a, index) => {
+                const icon = a.passed ? '✅' : '❌';
+                const color = a.passed ? '#27ae60' : '#e74c3c';
+                assertionHtml += `
+                    <div style="padding: 0.5rem; margin: 0.5rem 0; border-left: 3px solid ${color}; background: white;">
+                        <p style="margin: 0; color: ${color};"><strong>${icon} ${a.description || a.path}</strong></p>
+                        <p style="margin: 0.3rem 0 0 0; font-size: 0.9rem; color: #666;">${a.message}</p>
+                    </div>
+                `;
+            });
+            assertionHtml += '</div>';
+        } catch (e) {
+            console.error('Failed to parse assertions:', e);
+        }
+    }
+
+    const html = `
+        <div style="margin-top: 1rem;">
+            <div style="padding: 1rem; background: ${statusBg}; border-radius: 4px; margin-bottom: 1.5rem;">
+                <p style="margin: 0; font-size: 1.3rem;"><strong>${statusText}</strong></p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <p style="margin: 0.5rem 0;"><strong>📝 用例名称:</strong> ${result.test_case_name}</p>
+                <p style="margin: 0.5rem 0;"><strong>🔢 状态码:</strong> ${result.actual_status}</p>
+                <p style="margin: 0.5rem 0;"><strong>⏱️ 响应时间:</strong> ${result.response_time}秒</p>
+                <p style="margin: 0.5rem 0;"><strong>🕐 执行时间:</strong> ${result.executed_at}</p>
+            </div>
+
+            ${assertionHtml}
+
+            ${result.error_message ? `
+                <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid #e74c3c;">
+                    <p style="margin: 0;"><strong>❌ 错误信息:</strong></p>
+                    <p style="margin: 0.5rem 0; color: #721c24;">${result.error_message}</p>
+                </div>
+            ` : ''}
+
+            <details style="margin-top: 1rem;">
+                <summary style="cursor: pointer; color: #3498db; font-weight: bold;">查看完整响应</summary>
+                <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto; max-height: 300px; margin-top: 0.5rem;">${result.response_body || '无响应内容'}</pre>
+            </details>
+        </div>
+    `;
+
+    document.getElementById('detail-content').innerHTML = html;
+    document.getElementById('detail-modal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('detail-modal').style.display = 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block title %}场景编排{% endblock %}
+
+{% block content %}
+<style>
+/* 页面容器 */
+.sc-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* 顶部横幅 */
+.sc-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.sc-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sc-banner-left h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.sc-banner-left p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.9;
+}
+
+.sc-banner-stats {
+    display: flex;
+    gap: 32px;
+}
+
+.sc-stat-item {
+    text-align: center;
+}
+
+.sc-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.sc-stat-label {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+/* 操作栏 */
+.sc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+/* 场景卡片网格 */
+.sc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+}
+
+.sc-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    border-top: 4px solid #667eea;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.sc-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), transparent);
+    border-radius: 0 0 0 100%;
+}
+
+.sc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.sc-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+
+.sc-card-icon {
+    font-size: 24px;
+    opacity: 0.6;
+}
+
+.sc-card-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    min-height: 44px;
+}
+
+.sc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 13px;
+    color: #888;
+    padding: 12px 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;
+}
+
+.sc-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sc-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success { background: #d4edda; color: #155724; }
+.badge-failed { background: #f8d7da; color: #721c24; }
+.badge-running { background: #fff3cd; color: #856404; }
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.empty-state-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 800px;
+    margin: 32px auto 32px;
+    text-align: left;
+}
+
+.empty-feature {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-feature-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.empty-feature-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.empty-feature-desc {
+    font-size: 12px;
+    color: #888;
+}
+</style>
+
+<div class="sc-container">
+    <!-- 顶部横幅 -->
+    <div class="sc-banner">
+        <div class="sc-banner-content">
+            <div class="sc-banner-left">
+                <h1>🎬 场景编排</h1>
+                <p>串联多个接口，实现复杂业务流程的自动化测试</p>
+            </div>
+            <div class="sc-banner-stats">
+                <div class="sc-stat-item">
+                    <span class="sc-stat-value">{{ data|length if data else 0 }}</span>
+                    <span class="sc-stat-label">场景总数</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="sc-toolbar">
+        <div></div>
+        <a href="/scenarios/add" class="btn btn-success">+ 新建场景</a>
+    </div>
+
+    <!-- 场景列表 -->
+    {% if data %}
+    <div class="sc-grid">
+    {% for item in data %}
+    {% set s = item.scenario %}
+    <div class="sc-card">
+        <div class="sc-card-header">
+            <div class="sc-card-title">{{ s.name }}</div>
+            <div class="sc-card-icon">🎯</div>
+        </div>
+        <div class="sc-card-desc">{{ s.description or '暂无描述' }}</div>
+        <div class="sc-meta">
+            <div class="sc-meta-item">
+                <span class="icon">📋</span>
+                <span>{{ item.step_count }} 个步骤</span>
+            </div>
+            <div class="sc-meta-item">
+                <span class="icon">🕐</span>
+                <span>{{ s.created_at.strftime('%Y-%m-%d') }}</span>
+            </div>
+            {% if item.last_result %}
+            <div class="sc-meta-item">
+                <span>最近：</span>
+                <span class="badge badge-{{ item.last_result.status }}">
+                    {{ '成功' if item.last_result.status == 'success' else '失败' }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="sc-actions">
+            <button class="btn btn-success btn-small" onclick="runScenario({{ s.id }}, this)">▶ 执行</button>
+            <a href="/scenarios/{{ s.id }}/edit" class="btn btn-small" style="background:#6c757d">✏️ 编辑</a>
+            <a href="/scenarios/{{ s.id }}/history" class="btn btn-small" style="background:#17a2b8">📜 历史</a>
+            <form method="post" action="/scenarios/{{ s.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('确认删除场景「{{ s.name }}」？')">
+                <button type="submit" class="btn btn-danger btn-small">🗑 删除</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🎬</div>
+        <h3>还没有场景</h3>
+        <p>场景编排可以将多个接口按顺序串联，并在步骤间传递变量</p>
+
+        <div class="empty-state-features">
+            <div class="empty-feature">
+                <div class="empty-feature-icon">🔗</div>
+                <div class="empty-feature-title">接口串联</div>
+                <div class="empty-feature-desc">按顺序执行多个接口</div>
+            </div>
+            <div class="empty-feature">
+                <div class="empty-feature-icon">🔄</div>
+                <div class="empty-feature-title">变量传递</div>
+                <div class="empty-feature-desc">自动提取并传递数据</div>
+            </div>
+            <div class="empty-feature">
+                <div class="empty-feature-icon">✅</div>
+                <div class="empty-feature-title">智能断言</div>
+                <div class="empty-feature-desc">每步都可设置断言</div>
+            </div>
+        </div>
+
+        <a href="/scenarios/add" class="btn btn-success" style="font-size:16px;padding:12px 32px">+ 新建第一个场景</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function runScenario(id, btn) {
+    btn.disabled = true;
+    btn.textContent = '执行中…';
+    fetch('/scenarios/' + id + '/run', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                window.location.href = '/scenarios/results/' + d.result_id;
+            } else {
+                alert('执行失败：' + d.error);
+                btn.disabled = false;
+                btn.textContent = '▶ 执行';
+            }
+        })
+        .catch(() => {
+            alert('请求失败，请检查服务是否运行');
+            btn.disabled = false;
+            btn.textContent = '▶ 执行';
+        });
+}
+</script>
+{% endblock %}
+
+

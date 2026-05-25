@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑场景' if scenario else '新建场景' }}{% endblock %}
+
+{% block content %}
+<style>
+.form-wrap { max-width:900px; margin:0 auto; }
+.form-wrap h2 { margin-bottom:20px; color:#2c3e50; }
+.step-list { list-style:none; padding:0; margin:0; }
+.step-item {
+    background:#f8f9fa; border:1px solid #dee2e6; border-radius:8px;
+    padding:14px 16px; margin-bottom:10px; position:relative;
+}
+.step-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.step-num { background:#667eea; color:#fff; border-radius:50%; width:24px; height:24px;
+            display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.step-header select { flex:1; }
+.step-header .btn-remove { margin-left:auto; }
+.extract-list { margin-top:8px; }
+.extract-row { display:flex; gap:8px; margin-bottom:6px; align-items:center; }
+.extract-row input { flex:1; }
+.extract-row .lbl { font-size:12px; color:#888; white-space:nowrap; }
+.add-extract { font-size:12px; color:#667eea; cursor:pointer; text-decoration:underline; }
+.wait-row { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; color:#666; }
+.wait-row input { width:80px; }
+.drag-handle { cursor:grab; color:#aaa; font-size:18px; }
+</style>
+
+<div class="form-wrap">
+    <h2>{{ '✏️ 编辑场景' if scenario else '🎬 新建场景' }}</h2>
+
+    <div class="card">
+        <div class="form-group">
+            <label>场景名称 <span style="color:red">*</span></label>
+            <input type="text" id="scenarioName" placeholder="例如：用户登录并查询订单"
+                   value="{{ scenario.name if scenario else '' }}">
+        </div>
+        <div class="form-group">
+            <label>描述</label>
+            <textarea id="scenarioDesc" rows="2" placeholder="可选，描述该场景的测试目的">{{ scenario.description if scenario else '' }}</textarea>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <h3 style="margin:0;font-size:16px;">步骤列表</h3>
+            <button class="btn btn-success btn-small" onclick="addStep()">+ 添加步骤</button>
+        </div>
+        <ul class="step-list" id="stepList"></ul>
+        <p id="noStepHint" style="color:#aaa;font-size:13px;text-align:center;padding:20px 0;">
+            点击「添加步骤」开始构建场景
+        </p>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+        <button class="btn btn-success" onclick="saveScenario()">💾 保存场景</button>
+        <a href="/scenarios" class="btn" style="background:#6c757d">← 返回列表</a>
+    </div>
+</div>
+
+<script>
+var TEST_CASES = {{ test_cases | tojson }};
+var EXISTING_STEPS = {{ steps | tojson }};
+var SCENARIO_ID = {{ scenario.id if scenario else 'null' }};
+
+var stepCounter = 0;
+
+function buildCaseOptions(selectedId) {
+    var opts = '<option value="">-- 选择测试用例 --</option>';
+    TEST_CASES.forEach(function(tc) {
+        var sel = (tc.id == selectedId) ? ' selected' : '';
+        opts += '<option value="' + tc.id + '"' + sel + '>' + escHtml(tc.name) + '</option>';
+    });
+    return opts;
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function addStep(data) {
+    data = data || {};
+    stepCounter++;
+    var id = 'step-' + stepCounter;
+    var extractions = data.variable_extractions ? JSON.parse(data.variable_extractions) : [];
+
+    var li = document.createElement('li');
+    li.className = 'step-item';
+    li.dataset.id = id;
+
+    li.innerHTML =
+        '<div class="step-header">' +
+            '<span class="drag-handle">⠿</span>' +
+            '<span class="step-num">' + getStepNumber(li) + '</span>' +
+            '<select class="tc-select">' + buildCaseOptions(data.test_case_id) + '</select>' +
+            '<button class="btn btn-danger btn-small btn-remove" onclick="removeStep(this)">✕</button>' +
+        '</div>' +
+        '<div class="wait-row">' +
+            '⏱ 执行前等待 <input type="number" class="wait-input" min="0" step="0.5" value="' + (data.wait_seconds || 0) + '"> 秒' +
+        '</div>' +
+        '<div class="extract-list" id="ext-' + id + '">' +
+            buildExtractionRows(extractions, id) +
+        '</div>' +
+        '<span class="add-extract" onclick="addExtractRow(\'' + id + '\')">+ 添加变量提取</span>';
+
+    document.getElementById('stepList').appendChild(li);
+    document.getElementById('noStepHint').style.display = 'none';
+    refreshNumbers();
+}
+
+function buildExtractionRows(extractions, stepId) {
+    if (!extractions || !extractions.length) return '';
+    return extractions.map(function(e) {
+        return makeExtractRowHtml(stepId, e.name, e.path);
+    }).join('');
+}
+
+function makeExtractRowHtml(stepId, name, path) {
+    return '<div class="extract-row">' +
+        '<span class="lbl">变量名</span>' +
+        '<input type="text" class="ext-name" placeholder="token" value="' + escHtml(name || '') + '">' +
+        '<span class="lbl">提取路径</span>' +
+        '<input type="text" class="ext-path" placeholder="data.token 或 $.id" value="' + escHtml(path || '') + '">' +
+        '<button class="btn btn-danger btn-small" onclick="this.parentElement.remove()">✕</button>' +
+    '</div>';
+}
+
+function addExtractRow(stepId) {
+    var container = document.getElementById('ext-' + stepId);
+    var div = document.createElement('div');
+    div.innerHTML = makeExtractRowHtml(stepId, '', '');
+    container.appendChild(div.firstChild);
+}
+
+function removeStep(btn) {
+    btn.closest('.step-item').remove();
+    refreshNumbers();
+    if (!document.querySelectorAll('.step-item').length) {
+        document.getElementById('noStepHint').style.display = '';
+    }
+}
+
+function getStepNumber(li) {
+    var items = document.querySelectorAll('.step-item');
+    for (var i = 0; i < items.length; i++) {
+        if (items[i] === li) return i + 1;
+    }
+    return '?';
+}
+
+function refreshNumbers() {
+    document.querySelectorAll('.step-item').forEach(function(li, i) {
+        li.querySelector('.step-num').textContent = i + 1;
+    });
+}
+
+function collectSteps() {
+    var steps = [];
+    document.querySelectorAll('.step-item').forEach(function(li) {
+        var tcId = li.querySelector('.tc-select').value;
+        if (!tcId) return;
+        var wait = parseFloat(li.querySelector('.wait-input').value) || 0;
+        var extractions = [];
+        li.querySelectorAll('.extract-row').forEach(function(row) {
+            var name = row.querySelector('.ext-name').value.trim();
+            var path = row.querySelector('.ext-path').value.trim();
+            if (name && path) extractions.push({ name: name, path: path });
+        });
+        steps.push({
+            test_case_id: parseInt(tcId),
+            wait_seconds: wait,
+            variable_extractions: extractions,
+        });
+    });
+    return steps;
+}
+
+function saveScenario() {
+    var name = document.getElementById('scenarioName').value.trim();
+    var desc = document.getElementById('scenarioDesc').value.trim();
+    var steps = collectSteps();
+
+    if (!name) { alert('请填写场景名称'); return; }
+    if (!steps.length) { alert('请至少添加一个步骤'); return; }
+
+    var url = SCENARIO_ID ? '/scenarios/' + SCENARIO_ID + '/edit' : '/scenarios/add';
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, description: desc, steps: steps })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            window.location.href = '/scenarios';
+        } else {
+            alert('保存失败：' + d.error);
+        }
+    })
+    .catch(() => alert('请求失败'));
+}
+
+// 初始化已有步骤（编辑模式）
+EXISTING_STEPS.forEach(function(s) { addStep(s); });
+</script>
+{% endblock %}

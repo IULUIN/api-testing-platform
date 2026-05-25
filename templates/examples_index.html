@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}教程中心 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3rem 2rem; border-radius: 12px; margin-bottom: 2rem; color: white; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: white;">📚 教程中心</h1>
+    <p style="font-size: 1.2rem; opacity: 0.9;">选择一个教程开始学习，每个教程都有可直接执行的示例</p>
+</div>
+
+<!-- 教程卡片网格 -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+
+    <!-- 智能断言教程 -->
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+         onclick="location.href='/examples/smart-assertions'"
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 8px 8px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">✨ 智能断言</h2>
+            <span style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-top: 0.5rem;">
+                已实现 • 3个示例
+            </span>
+        </div>
+
+        <p style="color: #555; line-height: 1.8; margin-bottom: 1rem;">
+            学习如何使用智能断言验证API响应，支持10种断言类型，可以检查响应中的任意字段。
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #333;">你将学到：</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                <li>JSON路径断言</li>
+                <li>10种断言类型</li>
+                <li>复杂场景验证</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #27ae60; font-weight: bold;">
+                ⚡ 可立即执行
+            </span>
+            <span style="color: #3498db;">
+                点击进入 →
+            </span>
+        </div>
+    </div>
+
+    <!-- 参数化测试教程 -->
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+         onclick="location.href='/examples/parameterized-testing'"
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.5rem; border-radius: 8px 8px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">📊 参数化测试</h2>
+            <span style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-top: 0.5rem;">
+                已实现 • Excel/CSV
+            </span>
+        </div>
+
+        <p style="color: #555; line-height: 1.8; margin-bottom: 1rem;">
+            学习如何使用Excel/CSV导入测试数据，一个用例测试多组数据，实现数据驱动测试。
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #333;">你将学到：</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                <li>Excel数据导入</li>
+                <li>数据驱动测试</li>
+                <li>批量执行用例</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #27ae60; font-weight: bold;">
+                ⚡ 可立即使用
+            </span>
+            <span style="color: #3498db;">
+                点击进入 →
+            </span>
+        </div>
+    </div>
+
+    <!-- 定时任务教程 -->
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+         onclick="location.href='/examples/scheduled-tasks'"
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 8px 8px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">⏰ 定时任务</h2>
+            <span style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-top: 0.5rem;">
+                已实现 • Cron表达式
+            </span>
+        </div>
+
+        <p style="color: #555; line-height: 1.8; margin-bottom: 1rem;">
+            学习如何设置定时任务，让测试用例自动执行，支持Cron表达式配置。
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #333;">你将学到：</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                <li>Cron表达式配置</li>
+                <li>自动化执行</li>
+                <li>任务管理</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #27ae60; font-weight: bold;">
+                ⚡ 可立即使用
+            </span>
+            <span style="color: #3498db;">
+                点击进入 →
+            </span>
+        </div>
+    </div>
+
+    <!-- 场景编排教程 -->
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+         onclick="location.href='/examples/scenario-orchestration'"
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.5rem; border-radius: 8px 8px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">🎭 场景编排</h2>
+            <span style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-top: 0.5rem;">
+                已实现 • 多步骤流程
+            </span>
+        </div>
+
+        <p style="color: #555; line-height: 1.8; margin-bottom: 1rem;">
+            学习如何创建多步骤测试场景，实现复杂业务流程的自动化测试。
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #333;">你将学到：</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                <li>多步骤场景创建</li>
+                <li>变量提取与传递</li>
+                <li>场景执行与结果</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #27ae60; font-weight: bold;">
+                ⚡ 可立即使用
+            </span>
+            <span style="color: #3498db;">
+                点击进入 →
+            </span>
+        </div>
+    </div>
+
+    <!-- 并发压测教程 -->
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+         onclick="location.href='/examples/load-testing'"
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+        <div style="background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); padding: 1.5rem; border-radius: 8px 8px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">🚀 并发压测</h2>
+            <span style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-top: 0.5rem;">
+                已实现 • 性能测试
+            </span>
+        </div>
+
+        <p style="color: #555; line-height: 1.8; margin-bottom: 1rem;">
+            学习如何配置并发压测，测试API的性能表现和承载能力。
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #333;">你将学到：</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                <li>并发用户配置</li>
+                <li>性能指标分析</li>
+                <li>压测报告导出</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #27ae60; font-weight: bold;">
+                ⚡ 可立即使用
+            </span>
+            <span style="color: #3498db;">
+                点击进入 →
+            </span>
+        </div>
+    </div>
+
+    <!-- 性能监控教程 -->
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+         onclick="location.href='/examples/performance-monitoring'"
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">
+        <div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 1.5rem; border-radius: 8px 8px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">📈 性能监控</h2>
+            <span style="background: rgba(255,255,255,0.3); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-top: 0.5rem;">
+                已实现 • 趋势分析
+            </span>
+        </div>
+
+        <p style="color: #555; line-height: 1.8; margin-bottom: 1rem;">
+            学习如何使用性能监控功能，分析API响应时间趋势和历史对比。
+        </p>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #333;">你将学到：</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                <li>性能数据可视化</li>
+                <li>趋势分析图表</li>
+                <li>历史数据对比</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #27ae60; font-weight: bold;">
+                ⚡ 可立即使用
+            </span>
+            <span style="color: #3498db;">
+                点击进入 →
+            </span>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

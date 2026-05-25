@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}添加测试用例 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1rem;">➕ 添加新的测试用例</h1>
+
+<div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #ffc107;">
+    <p style="margin: 0; color: #856404;">
+        <strong>💡 填写说明：</strong>带 <span style="color: red;">*</span> 的是必填项，其他可以不填
+    </p>
+</div>
+
+<div class="card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">
+                <strong>1️⃣ 用例名称</strong> <span style="color: red;">*</span>
+            </label>
+            <input type="text" id="name" name="name" required
+                   placeholder="例如：查询用户信息、登录接口测试">
+            <small style="color: #7f8c8d;">给这个测试起个容易记住的名字</small>
+        </div>
+
+        <div class="form-group">
+            <label for="url">
+                <strong>2️⃣ 接口地址（URL）</strong> <span style="color: red;">*</span>
+            </label>
+            <input type="url" id="url" name="url" required
+                   placeholder="https://api.example.com/users">
+            <small style="color: #7f8c8d;">要测试的接口完整网址，必须以http://或https://开头</small>
+        </div>
+
+        <div class="form-group">
+            <label for="method">
+                <strong>3️⃣ 请求方式</strong> <span style="color: red;">*</span>
+            </label>
+            <select id="method" name="method" required>
+                <option value="GET">GET - 查询数据（最常用）</option>
+                <option value="POST">POST - 提交/创建数据</option>
+                <option value="PUT">PUT - 更新数据</option>
+                <option value="DELETE">DELETE - 删除数据</option>
+            </select>
+            <small style="color: #7f8c8d;">
+                <strong>不知道选什么？</strong>
+                查询信息选GET，提交表单选POST
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="expected_status">
+                <strong>4️⃣ 期望状态码</strong> <span style="color: red;">*</span>
+            </label>
+            <input type="number" id="expected_status" name="expected_status"
+                   value="200" required>
+            <small style="color: #7f8c8d;">
+                <strong>常用状态码：</strong>
+                200=成功，201=创建成功，400=请求错误，404=找不到，500=服务器错误
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="headers">
+                <strong>5️⃣ 请求头（Headers）</strong> <span style="color: #999;">选填</span>
+            </label>
+            <textarea id="headers" name="headers" rows="3"
+                      placeholder='{"Content-Type": "application/json"}'></textarea>
+            <small style="color: #7f8c8d;">
+                <strong>什么时候需要填？</strong>
+                如果接口需要登录，在这里填写Token；如果发送JSON数据，填写Content-Type
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="body">
+                <strong>6️⃣ 请求体（Body）</strong> <span style="color: #999;">选填</span>
+            </label>
+            <textarea id="body" name="body" rows="4"
+                      placeholder='{"username": "test", "password": "123456"}'></textarea>
+            <small style="color: #7f8c8d;">
+                <strong>什么时候需要填？</strong>
+                POST和PUT请求通常需要，GET请求不需要。填写要提交的数据，JSON格式
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="assertions">
+                <strong>7️⃣ 断言规则（智能断言）</strong> <span style="color: #999;">选填</span>
+                <span style="background: #4caf50; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem; margin-left: 0.5rem;">NEW!</span>
+            </label>
+            <textarea id="assertions" name="assertions" rows="6"
+                      placeholder='[{"type": "equals", "path": "code", "expected": 200, "description": "状态码应该是200"}]'></textarea>
+            <small style="color: #7f8c8d;">
+                <strong>🎓 不会写？</strong>
+                <a href="/examples" target="_blank" style="color: #3498db; font-weight: bold;">点击查看示例教程</a>
+                ，里面有详细的示例和说明，可以直接复制使用！
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="description">
+                <strong>8️⃣ 用例说明</strong> <span style="color: #999;">选填</span>
+            </label>
+            <textarea id="description" name="description" rows="2"
+                      placeholder="这个测试用例是用来做什么的？有什么需要注意的？"></textarea>
+            <small style="color: #7f8c8d;">写一些备注，方便以后查看</small>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #eee;">
+            <button type="submit" class="btn btn-success" style="font-size: 1.1rem; padding: 0.7rem 2rem;">
+                ✅ 保存测试用例
+            </button>
+            <a href="/test-cases" class="btn" style="margin-left: 1rem;">
+                ❌ 取消
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>📚 示例参考</h2>
+
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: #3498db; margin-bottom: 0.5rem;">示例1：查询用户信息（GET请求）</h3>
+        <p><strong>用例名称：</strong>查询用户信息</p>
+        <p><strong>接口地址：</strong>https://jsonplaceholder.typicode.com/users/1</p>
+        <p><strong>请求方式：</strong>GET</p>
+        <p><strong>期望状态码：</strong>200</p>
+        <p><strong>请求头：</strong>不填</p>
+        <p><strong>请求体：</strong>不填</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+        <h3 style="color: #27ae60; margin-bottom: 0.5rem;">示例2：创建文章（POST请求）</h3>
+        <p><strong>用例名称：</strong>创建新文章</p>
+        <p><strong>接口地址：</strong>https://jsonplaceholder.typicode.com/posts</p>
+        <p><strong>请求方式：</strong>POST</p>
+        <p><strong>期望状态码：</strong>201</p>
+        <p><strong>请求头：</strong>{"Content-Type": "application/json"}</p>
+        <p><strong>请求体：</strong>{"title": "测试", "body": "内容", "userId": 1}</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+
+{% block title %}智能创建测试用例 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="/test-cases" class="btn" style="padding: 0.7rem 1.5rem; font-size: 15px; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        ← 返回测试用例列表
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">🤖 智能创建测试用例</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">选择场景模板，快速生成测试用例</p>
+</div>
+
+<!-- 模板选择 -->
+<div class="card">
+    <h2>📋 选择测试场景</h2>
+    <p style="color: #666; margin-bottom: 1.5rem;">选择一个常见场景，系统会自动生成测试用例</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <!-- 用户查询API -->
+        <div class="template-card" onclick="selectTemplate('user-query')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👤</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #3498db;">用户查询API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">GET /users/{id} - 查询用户信息</p>
+        </div>
+
+        <!-- 用户登录API -->
+        <div class="template-card" onclick="selectTemplate('user-login')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔐</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #27ae60;">用户登录API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">POST /login - 用户登录验证</p>
+        </div>
+
+        <!-- 数据列表API -->
+        <div class="template-card" onclick="selectTemplate('data-list')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #e74c3c;">数据列表API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">GET /items - 获取数据列表</p>
+        </div>
+
+        <!-- 数据创建API -->
+        <div class="template-card" onclick="selectTemplate('data-create')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">➕</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #f39c12;">数据创建API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">POST /items - 创建新数据</p>
+        </div>
+
+        <!-- 数据更新API -->
+        <div class="template-card" onclick="selectTemplate('data-update')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✏️</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #9b59b6;">数据更新API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">PUT /items/{id} - 更新数据</p>
+        </div>
+
+        <!-- 数据删除API -->
+        <div class="template-card" onclick="selectTemplate('data-delete')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🗑️</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #e67e22;">数据删除API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">DELETE /items/{id} - 删除数据</p>
+        </div>
+
+        <!-- 文件上传API -->
+        <div class="template-card" onclick="selectTemplate('file-upload')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📤</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #16a085;">文件上传API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">POST /upload - 上传文件</p>
+        </div>
+
+        <!-- 搜索API -->
+        <div class="template-card" onclick="selectTemplate('search')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔍</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #34495e;">搜索API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">GET /search - 搜索数据</p>
+        </div>
+
+        <!-- 自定义 -->
+        <div class="template-card" onclick="selectTemplate('custom')" style="cursor: pointer; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚙️</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #7f8c8d;">自定义API</h3>
+            <p style="color: #666; margin: 0; font-size: 0.9rem;">自定义配置</p>
+        </div>
+    </div>
+</div>
+
+<!-- 参数配置表单（动态显示） -->
+<div id="config-form" style="display: none;">
+    <div class="card">
+        <h2>⚙️ 配置参数</h2>
+        <form id="template-form">
+            <div id="form-content"></div>
+
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #eee;">
+                <button type="button" onclick="generateTestCase()" class="btn btn-success" style="font-size: 1.1rem; padding: 0.7rem 2rem;">
+                    ✨ 生成测试用例
+                </button>
+                <button type="button" onclick="cancelTemplate()" class="btn" style="margin-left: 1rem;">
+                    取消
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 预览和保存 -->
+<div id="preview-section" style="display: none;">
+    <div class="card">
+        <h2>👀 预览测试用例</h2>
+        <div id="preview-content"></div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #eee;">
+            <button type="button" onclick="saveTestCase()" class="btn btn-success" style="font-size: 1.1rem; padding: 0.7rem 2rem;">
+                💾 保存测试用例
+            </button>
+            <button type="button" onclick="editAgain()" class="btn" style="margin-left: 1rem;">
+                ✏️ 重新编辑
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTemplate = null;
+let generatedData = null;
+
+const templates = {
+    'user-query': {
+        name: '用户查询API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'user_id', label: '用户ID', type: 'text', placeholder: '1', required: true},
+            {name: 'token', label: 'Token（选填）', type: 'text', placeholder: 'Bearer xxx', required: false}
+        ],
+        generate: function(data) {
+            return {
+                name: `查询用户${data.user_id}的信息`,
+                url: `${data.base_url}/users/${data.user_id}`,
+                method: 'GET',
+                headers: data.token ? `{"Authorization": "${data.token}"}` : '',
+                body: '',
+                expected_status: 200,
+                assertions: JSON.stringify([
+                    {type: 'equals', path: 'id', expected: parseInt(data.user_id), description: '用户ID应该匹配'},
+                    {type: 'exists', path: 'name', description: 'name字段应该存在'},
+                    {type: 'type', path: 'email', expected: 'string', description: 'email应该是字符串'}
+                ], null, 2),
+                description: `测试查询用户ID为${data.user_id}的用户信息接口`
+            };
+        }
+    },
+    'user-login': {
+        name: '用户登录API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'username', label: '用户名', type: 'text', placeholder: 'admin', required: true},
+            {name: 'password', label: '密码', type: 'text', placeholder: 'admin123', required: true}
+        ],
+        generate: function(data) {
+            return {
+                name: `用户登录测试 - ${data.username}`,
+                url: `${data.base_url}/login`,
+                method: 'POST',
+                headers: '{"Content-Type": "application/json"}',
+                body: JSON.stringify({username: data.username, password: data.password}, null, 2),
+                expected_status: 200,
+                assertions: JSON.stringify([
+                    {type: 'equals', path: 'code', expected: 200, description: '响应码应该是200'},
+                    {type: 'exists', path: 'token', description: 'token字段应该存在'},
+                    {type: 'type', path: 'token', expected: 'string', description: 'token应该是字符串'}
+                ], null, 2),
+                description: `测试用户${data.username}的登录功能`
+            };
+        }
+    },
+    'data-list': {
+        name: '数据列表API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'resource', label: '资源名称', type: 'text', placeholder: 'posts', required: true},
+            {name: 'page_size', label: '每页数量', type: 'number', placeholder: '10', required: false}
+        ],
+        generate: function(data) {
+            const url = data.page_size ?
+                `${data.base_url}/${data.resource}?page=1&size=${data.page_size}` :
+                `${data.base_url}/${data.resource}`;
+            return {
+                name: `获取${data.resource}列表`,
+                url: url,
+                method: 'GET',
+                headers: '',
+                body: '',
+                expected_status: 200,
+                assertions: JSON.stringify([
+                    {type: 'type', path: '$', expected: 'array', description: '响应应该是数组'},
+                    {type: 'exists', path: '[0].id', description: '第一条数据应该有id字段'}
+                ], null, 2),
+                description: `测试获取${data.resource}列表接口`
+            };
+        }
+    },
+    'data-create': {
+        name: '数据创建API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'resource', label: '资源名称', type: 'text', placeholder: 'posts', required: true},
+            {name: 'sample_data', label: '示例数据（JSON）', type: 'textarea', placeholder: '{"title": "test", "content": "test content"}', required: true}
+        ],
+        generate: function(data) {
+            return {
+                name: `创建${data.resource}`,
+                url: `${data.base_url}/${data.resource}`,
+                method: 'POST',
+                headers: '{"Content-Type": "application/json"}',
+                body: data.sample_data,
+                expected_status: 201,
+                assertions: JSON.stringify([
+                    {type: 'exists', path: 'id', description: '创建成功应该返回id'},
+                    {type: 'type', path: 'id', expected: 'integer', description: 'id应该是整数'}
+                ], null, 2),
+                description: `测试创建${data.resource}接口`
+            };
+        }
+    },
+    'data-update': {
+        name: '数据更新API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'resource', label: '资源名称', type: 'text', placeholder: 'posts', required: true},
+            {name: 'resource_id', label: '资源ID', type: 'text', placeholder: '1', required: true},
+            {name: 'update_data', label: '更新数据（JSON）', type: 'textarea', placeholder: '{"title": "updated"}', required: true}
+        ],
+        generate: function(data) {
+            return {
+                name: `更新${data.resource} - ID:${data.resource_id}`,
+                url: `${data.base_url}/${data.resource}/${data.resource_id}`,
+                method: 'PUT',
+                headers: '{"Content-Type": "application/json"}',
+                body: data.update_data,
+                expected_status: 200,
+                assertions: JSON.stringify([
+                    {type: 'equals', path: 'id', expected: parseInt(data.resource_id), description: 'ID应该匹配'}
+                ], null, 2),
+                description: `测试更新${data.resource}接口`
+            };
+        }
+    },
+    'data-delete': {
+        name: '数据删除API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'resource', label: '资源名称', type: 'text', placeholder: 'posts', required: true},
+            {name: 'resource_id', label: '资源ID', type: 'text', placeholder: '1', required: true}
+        ],
+        generate: function(data) {
+            return {
+                name: `删除${data.resource} - ID:${data.resource_id}`,
+                url: `${data.base_url}/${data.resource}/${data.resource_id}`,
+                method: 'DELETE',
+                headers: '',
+                body: '',
+                expected_status: 204,
+                assertions: '',
+                description: `测试删除${data.resource}接口`
+            };
+        }
+    },
+    'search': {
+        name: '搜索API',
+        fields: [
+            {name: 'base_url', label: 'API基础地址', type: 'text', placeholder: 'https://api.example.com', required: true},
+            {name: 'keyword', label: '搜索关键词', type: 'text', placeholder: 'test', required: true}
+        ],
+        generate: function(data) {
+            return {
+                name: `搜索 - ${data.keyword}`,
+                url: `${data.base_url}/search?q=${encodeURIComponent(data.keyword)}`,
+                method: 'GET',
+                headers: '',
+                body: '',
+                expected_status: 200,
+                assertions: JSON.stringify([
+                    {type: 'type', path: '$', expected: 'array', description: '搜索结果应该是数组'}
+                ], null, 2),
+                description: `测试搜索关键词"${data.keyword}"的功能`
+            };
+        }
+    },
+    'custom': {
+        name: '自定义API',
+        fields: [
+            {name: 'name', label: '测试用例名称', type: 'text', placeholder: '我的测试用例', required: true},
+            {name: 'url', label: 'API地址', type: 'text', placeholder: 'https://api.example.com/endpoint', required: true},
+            {name: 'method', label: '请求方法', type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], required: true},
+            {name: 'expected_status', label: '期望状态码', type: 'number', placeholder: '200', required: true}
+        ],
+        generate: function(data) {
+            return {
+                name: data.name,
+                url: data.url,
+                method: data.method,
+                headers: '',
+                body: '',
+                expected_status: parseInt(data.expected_status),
+                assertions: '',
+                description: `自定义测试用例：${data.name}`
+            };
+        }
+    }
+};
+
+function selectTemplate(templateId) {
+    currentTemplate = templateId;
+    const template = templates[templateId];
+
+    // 高亮选中的模板
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.style.borderColor = '#e0e0e0';
+        card.style.background = 'white';
+    });
+    event.currentTarget.style.borderColor = '#3498db';
+    event.currentTarget.style.background = '#e3f2fd';
+
+    // 生成表单
+    let formHtml = `<h3 style="color: #3498db; margin-bottom: 1rem;">${template.name}</h3>`;
+
+    template.fields.forEach(field => {
+        formHtml += `<div class="form-group">`;
+        formHtml += `<label for="${field.name}"><strong>${field.label}</strong> ${field.required ? '<span style="color: red;">*</span>' : '<span style="color: #999;">选填</span>'}</label>`;
+
+        if (field.type === 'textarea') {
+            formHtml += `<textarea id="${field.name}" name="${field.name}" rows="4" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>`;
+        } else if (field.type === 'select') {
+            formHtml += `<select id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''}>`;
+            field.options.forEach(opt => {
+                formHtml += `<option value="${opt}">${opt}</option>`;
+            });
+            formHtml += `</select>`;
+        } else {
+            formHtml += `<input type="${field.type}" id="${field.name}" name="${field.name}" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`;
+        }
+
+        formHtml += `</div>`;
+    });
+
+    document.getElementById('form-content').innerHTML = formHtml;
+    document.getElementById('config-form').style.display = 'block';
+    document.getElementById('preview-section').style.display = 'none';
+
+    // 滚动到表单
+    document.getElementById('config-form').scrollIntoView({behavior: 'smooth'});
+}
+
+function cancelTemplate() {
+    currentTemplate = null;
+    document.getElementById('config-form').style.display = 'none';
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.style.borderColor = '#e0e0e0';
+        card.style.background = 'white';
+    });
+}
+
+function generateTestCase() {
+    if (!currentTemplate) return;
+
+    const template = templates[currentTemplate];
+    const formData = {};
+
+    // 收集表单数据
+    template.fields.forEach(field => {
+        const value = document.getElementById(field.name).value;
+        if (field.required && !value) {
+            alert(`请填写${field.label}`);
+            return;
+        }
+        formData[field.name] = value;
+    });
+
+    // 生成测试用例数据
+    generatedData = template.generate(formData);
+
+    // 显示预览
+    showPreview(generatedData);
+}
+
+function showPreview(data) {
+    let previewHtml = `
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+            <div style="margin-bottom: 1rem;">
+                <strong>用例名称：</strong> ${data.name}
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>接口地址：</strong> <code style="background: white; padding: 0.3rem 0.6rem; border-radius: 4px;">${data.url}</code>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>请求方法：</strong> <span style="background: #3498db; color: white; padding: 0.3rem 0.8rem; border-radius: 4px;">${data.method}</span>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>期望状态码：</strong> ${data.expected_status}
+            </div>
+    `;
+
+    if (data.headers) {
+        previewHtml += `
+            <div style="margin-bottom: 1rem;">
+                <strong>请求头：</strong>
+                <pre style="background: white; padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem;">${data.headers}</pre>
+            </div>
+        `;
+    }
+
+    if (data.body) {
+        previewHtml += `
+            <div style="margin-bottom: 1rem;">
+                <strong>请求体：</strong>
+                <pre style="background: white; padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem;">${data.body}</pre>
+            </div>
+        `;
+    }
+
+    if (data.assertions) {
+        previewHtml += `
+            <div style="margin-bottom: 1rem;">
+                <strong>智能断言：</strong>
+                <pre style="background: white; padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem;">${data.assertions}</pre>
+            </div>
+        `;
+    }
+
+    previewHtml += `
+            <div>
+                <strong>用例说明：</strong> ${data.description}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('preview-content').innerHTML = previewHtml;
+    document.getElementById('preview-section').style.display = 'block';
+    document.getElementById('config-form').style.display = 'none';
+
+    // 滚动到预览
+    document.getElementById('preview-section').scrollIntoView({behavior: 'smooth'});
+}
+
+function editAgain() {
+    document.getElementById('preview-section').style.display = 'none';
+    document.getElementById('config-form').style.display = 'block';
+    document.getElementById('config-form').scrollIntoView({behavior: 'smooth'});
+}
+
+function saveTestCase() {
+    if (!generatedData) return;
+
+    // 发送到服务器
+    fetch('/test-cases/smart-create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(generatedData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ 测试用例创建成功！');
+            window.location.href = '/test-cases';
+        } else {
+            alert('❌ 创建失败：' + (data.error || '未知错误'));
+        }
+    })
+    .catch(error => {
+        alert('❌ 请求失败：' + error);
+    });
+}
+
+// 鼠标悬停效果
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            if (this.style.borderColor !== 'rgb(52, 152, 219)') {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+            }
+        });
+        card.addEventListener('mouseleave', function() {
+            if (this.style.borderColor !== 'rgb(52, 152, 219)') {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

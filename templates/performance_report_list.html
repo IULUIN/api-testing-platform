@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}性能报告列表{% endblock %}
+
+{% block content %}
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.info-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.info-box h3 {
+    margin: 0 0 10px 0;
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #28a745;
+    color: white;
+}
+
+.badge-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.badge-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.empty-state p:first-child {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.empty-state p:last-child {
+    color: #6c757d;
+    font-size: 16px;
+}
+</style>
+
+<div class="container">
+    <div class="header">
+        <h1>📊 性能报告列表</h1>
+    </div>
+
+    <div class="info-box">
+        <h3>💡 如何生成性能报告？</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>步骤1：</strong>准备测试用例和数据集</p>
+        <p style="margin: 0 0 0.5rem 1.5rem;">在"测试用例"页面创建测试用例，在"数据集管理"页面上传Excel/CSV数据集。</p>
+
+        <p style="margin-bottom: 0.5rem;"><strong>步骤2：</strong>运行批量测试</p>
+        <p style="margin: 0 0 0.5rem 1.5rem;">在测试用例列表中，点击"批量测试"按钮，选择数据集并执行。</p>
+
+        <p style="margin-bottom: 0.5rem;"><strong>步骤3：</strong>查看性能报告</p>
+        <p style="margin: 0 0 0 1.5rem;">批量测试完成后，在结果页面点击"📊 查看性能报告"，或在下方列表中选择报告查看。</p>
+    </div>
+
+    <div class="info-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <h3>📈 报告包含的内容</h3>
+        <ul style="margin: 10px 0 0 20px;">
+            <li>响应时间趋势图 - 查看测试过程中响应时间的变化</li>
+            <li>成功率分布和仪表盘 - 直观展示测试成功率</li>
+            <li>百分位响应时间（P50、P90、P95、P99）- 性能指标对比</li>
+            <li>响应时间分布直方图 - 了解响应时间的分布情况</li>
+            <li>TPS（每秒事务数）- 系统吞吐量指标</li>
+            <li>详细统计数据表格 - 完整的测试数据汇总</li>
+        </ul>
+    </div>
+
+    {% if batch_results %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>测试用例</th>
+                    <th>总测试数</th>
+                    <th>成功率</th>
+                    <th>平均响应时间</th>
+                    <th>执行时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for batch in batch_results %}
+                <tr>
+                    <td>{{ batch.id }}</td>
+                    <td><strong>{{ batch.test_case_name }}</strong></td>
+                    <td>{{ batch.total_count }}</td>
+                    <td>
+                        {% if batch.success_rate >= 90 %}
+                        <span class="badge badge-success">{{ batch.success_rate }}%</span>
+                        {% elif batch.success_rate >= 70 %}
+                        <span class="badge badge-warning">{{ batch.success_rate }}%</span>
+                        {% else %}
+                        <span class="badge badge-danger">{{ batch.success_rate }}%</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ batch.avg_response_time }}ms</td>
+                    <td>{{ batch.executed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        <a href="/performance-report/{{ batch.id }}" class="btn btn-sm btn-primary">📊 查看报告</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>📭</p>
+        <p style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">还没有性能报告</p>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">运行批量测试后，系统会自动生成性能报告</p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="/test-cases" class="btn btn-primary">📝 查看测试用例</a>
+            <a href="/data-sets" class="btn btn-success">📊 管理数据集</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

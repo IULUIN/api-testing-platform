@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}性能监控教程 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="/examples" style="color: #3498db; text-decoration: none;">
+        ← 返回教程中心
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">📈 性能监控教程</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">学习如何使用性能监控功能，分析API性能趋势</p>
+</div>
+
+<!-- 功能介绍 -->
+<div class="card">
+    <h2>📖 功能介绍</h2>
+    <p style="line-height: 1.8; color: #555;">
+        性能监控功能帮助你持续跟踪API的性能表现，通过可视化图表展示响应时间趋势、
+        成功率变化、历史数据对比等信息。让你及时发现性能问题，评估优化效果。
+    </p>
+
+    <div style="background: #e1f5fe; padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid #03a9f4;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #01579b;">💡 核心功能</h4>
+        <ul style="margin: 0; padding-left: 1.5rem; color: #555;">
+            <li><strong>趋势分析：</strong>查看响应时间随时间的变化趋势</li>
+            <li><strong>历史对比：</strong>对比不同时间段的性能数据</li>
+            <li><strong>性能评分：</strong>基于多个指标的综合评分</li>
+            <li><strong>异常检测：</strong>自动识别性能异常点</li>
+            <li><strong>报告导出：</strong>导出性能报告用于分享和存档</li>
+        </ul>
+    </div>
+</div>
+
+<!-- 监控指标 -->
+<div class="card">
+    <h2>📊 监控指标说明</h2>
+
+    <h3>响应时间指标</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>指标</th>
+                <th>说明</th>
+                <th>关注点</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>平均响应时间</td>
+                <td>所有请求的平均响应时间</td>
+                <td>整体性能水平</td>
+            </tr>
+            <tr>
+                <td>最小响应时间</td>
+                <td>最快的请求响应时间</td>
+                <td>最佳性能表现</td>
+            </tr>
+            <tr>
+                <td>最大响应时间</td>
+                <td>最慢的请求响应时间</td>
+                <td>性能瓶颈识别</td>
+            </tr>
+            <tr>
+                <td>P95响应时间</td>
+                <td>95%的请求响应时间</td>
+                <td>用户体验指标</td>
+            </tr>
+            <tr>
+                <td>P99响应时间</td>
+                <td>99%的请求响应时间</td>
+                <td>极端情况分析</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>成功率指标</h3>
+    <p style="color: #555; line-height: 1.8;">
+        <strong>成功率：</strong>请求成功的百分比，反映API的稳定性和可用性。
+    </p>
+    <ul style="color: #555; line-height: 1.8;">
+        <li><strong>100%：</strong>完美状态，所有请求都成功</li>
+        <li><strong>99.9%+：</strong>优秀，偶尔有失败</li>
+        <li><strong>95%-99%：</strong>良好，需要关注失败原因</li>
+        <li><strong>&lt;95%：</strong>需要立即优化</li>
+    </ul>
+
+    <h3>吞吐量指标</h3>
+    <p style="color: #555; line-height: 1.8;">
+        <strong>RPS（每秒请求数）：</strong>反映系统的处理能力和负载情况。
+    </p>
+</div>
+
+<!-- 查看性能报告 -->
+<div class="card">
+    <h2>🔍 查看性能报告</h2>
+
+    <h3>方式1：批量测试报告</h3>
+    <p style="color: #555; line-height: 1.8;">
+        在"数据集"页面执行批量测试后，可以查看该批次的性能报告：
+    </p>
+    <ol style="color: #555; line-height: 1.8;">
+        <li>进入"数据集"页面</li>
+        <li>选择数据集和测试用例</li>
+        <li>执行批量测试</li>
+        <li>测试完成后，点击"查看报告"</li>
+    </ol>
+
+    <h3>方式2：压测结果报告</h3>
+    <p style="color: #555; line-height: 1.8;">
+        在"并发压测"页面执行压测后，可以查看详细的性能报告：
+    </p>
+    <ol style="color: #555; line-height: 1.8;">
+        <li>进入"并发压测"页面</li>
+        <li>创建并执行压测任务</li>
+        <li>压测完成后，点击"查看报告"</li>
+        <li>查看详细的性能指标和图表</li>
+    </ol>
+
+    <h3>方式3：测试用例历史</h3>
+    <p style="color: #555; line-height: 1.8;">
+        查看单个测试用例的历史执行数据：
+    </p>
+    <ol style="color: #555; line-height: 1.8;">
+        <li>进入"测试用例"页面</li>
+        <li>点击用例名称进入详情</li>
+        <li>查看"执行历史"标签</li>
+        <li>点击"性能趋势"查看图表</li>
+    </ol>
+</div>
+
+<!-- 趋势分析 -->
+<div class="card">
+    <h2>📈 趋势分析</h2>
+
+    <h3>响应时间趋势图</h3>
+    <p style="color: #555; line-height: 1.8;">
+        时间序列图展示响应时间随时间的变化，帮助你：
+    </p>
+    <ul style="color: #555; line-height: 1.8;">
+        <li><strong>识别性能波动：</strong>发现响应时间的异常波动</li>
+        <li><strong>评估优化效果：</strong>对比优化前后的性能变化</li>
+        <li><strong>预测性能趋势：</strong>根据历史数据预测未来趋势</li>
+        <li><strong>定位问题时间：</strong>找出性能下降的具体时间点</li>
+    </ul>
+
+    <h3>响应时间分布图</h3>
+    <p style="color: #555; line-height: 1.8;">
+        直方图展示响应时间的分布情况，帮助你：
+    </p>
+    <ul style="color: #555; line-height: 1.8;">
+        <li>了解大部分请求的响应时间范围</li>
+        <li>识别异常慢的请求</li>
+        <li>评估用户体验的一致性</li>
+    </ul>
+
+    <h3>成功率趋势图</h3>
+    <p style="color: #555; line-height: 1.8;">
+        展示成功率随时间的变化，帮助你：
+    </p>
+    <ul style="color: #555; line-height: 1.8;">
+        <li>监控API的稳定性</li>
+        <li>及时发现可用性问题</li>
+        <li>分析失败原因和规律</li>
+    </ul>
+</div>
+
+<!-- 历史对比 -->
+<div class="card">
+    <h2>🔄 历史数据对比</h2>
+
+    <h3>对比功能</h3>
+    <p style="color: #555; line-height: 1.8;">
+        选择多次测试结果进行对比，可以：
+    </p>
+    <ul style="color: #555; line-height: 1.8;">
+        <li><strong>版本对比：</strong>对比不同版本的性能差异</li>
+        <li><strong>优化效果：</strong>评估性能优化的实际效果</li>
+        <li><strong>环境对比：</strong>对比不同环境的性能表现</li>
+        <li><strong>时间对比：</strong>对比不同时间段的性能数据</li>
+    </ul>
+
+    <h3>对比指标</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>指标</th>
+                <th>对比维度</th>
+                <th>分析重点</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>平均响应时间</td>
+                <td>绝对值、变化率</td>
+                <td>整体性能变化</td>
+            </tr>
+            <tr>
+                <td>P95响应时间</td>
+                <td>绝对值、变化率</td>
+                <td>用户体验变化</td>
+            </tr>
+            <tr>
+                <td>成功率</td>
+                <td>百分比、变化量</td>
+                <td>稳定性变化</td>
+            </tr>
+            <tr>
+                <td>吞吐量</td>
+                <td>RPS、变化率</td>
+                <td>处理能力变化</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 性能评分 -->
+<div class="card">
+    <h2>⭐ 性能评分</h2>
+
+    <p style="color: #555; line-height: 1.8;">
+        系统会根据多个指标计算综合性能评分（0-100分），评分标准：
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h3 style="color: #2e7d32; margin: 0 0 0.5rem 0;">90-100分</h3>
+            <p style="margin: 0; color: #555;">优秀</p>
+        </div>
+
+        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h3 style="color: #1976d2; margin: 0 0 0.5rem 0;">80-89分</h3>
+            <p style="margin: 0; color: #555;">良好</p>
+        </div>
+
+        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h3 style="color: #e65100; margin: 0 0 0.5rem 0;">70-79分</h3>
+            <p style="margin: 0; color: #555;">一般</p>
+        </div>
+
+        <div style="background: #ffebee; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h3 style="color: #c62828; margin: 0 0 0.5rem 0;">&lt;70分</h3>
+            <p style="margin: 0; color: #555;">需优化</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 1.5rem;">评分因素</h3>
+    <ul style="color: #555; line-height: 1.8;">
+        <li><strong>响应时间（40%）：</strong>平均响应时间、P95、P99</li>
+        <li><strong>成功率（30%）：</strong>请求成功的百分比</li>
+        <li><strong>稳定性（20%）：</strong>响应时间的波动程度</li>
+        <li><strong>吞吐量（10%）：</strong>系统的处理能力</li>
+    </ul>
+</div>
+
+<!-- 报告导出 -->
+<div class="card">
+    <h2>📥 报告导出</h2>
+
+    <h3>导出格式</h3>
+    <p style="color: #555; line-height: 1.8;">
+        支持导出为Excel格式，包含：
+    </p>
+    <ul style="color: #555; line-height: 1.8;">
+        <li><strong>汇总信息：</strong>测试配置、执行时间、总体指标</li>
+        <li><strong>详细数据：</strong>每次请求的详细记录</li>
+        <li><strong>统计分析：</strong>响应时间分布、成功率统计</li>
+        <li><strong>图表：</strong>趋势图、分布图等可视化图表</li>
+    </ul>
+
+    <h3>导出步骤</h3>
+    <ol style="color: #555; line-height: 1.8;">
+        <li>打开性能报告页面</li>
+        <li>点击"导出报告"按钮</li>
+        <li>选择导出格式（Excel）</li>
+        <li>下载生成的报告文件</li>
+    </ol>
+</div>
+
+<!-- 最佳实践 -->
+<div class="card">
+    <h2>💡 最佳实践</h2>
+
+    <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #4caf50;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #2e7d32;">✅ 建议做法</h4>
+        <ul style="margin: 0; padding-left: 1.5rem; color: #555;">
+            <li>定期查看性能报告，建立性能基线</li>
+            <li>关注趋势变化，而不仅仅是单次数据</li>
+            <li>结合业务场景分析性能指标</li>
+            <li>发现异常时及时调查原因</li>
+            <li>优化后对比前后数据，验证效果</li>
+        </ul>
+    </div>
+
+    <div style="background: #ffebee; padding: 1rem; border-radius: 8px; border-left: 4px solid #f44336;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #c62828;">❌ 避免做法</h4>
+        <ul style="margin: 0; padding-left: 1.5rem; color: #555;">
+            <li>只关注平均值，忽略P95、P99等指标</li>
+            <li>不定期监控，只在出问题时才查看</li>
+            <li>忽略成功率，只关注响应时间</li>
+            <li>不做历史对比，无法评估变化</li>
+        </ul>
+    </div>
+</div>
+
+<!-- 快速开始 -->
+<div class="card" style="background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%); border: none;">
+    <h2 style="color: #01579b;">🎯 快速开始</h2>
+    <p style="color: #555; line-height: 1.8; margin-bottom: 1.5rem;">
+        准备好查看你的API性能数据了吗？点击下面的按钮开始吧！
+    </p>
+    <a href="/performance-report" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem; text-decoration: none;">
+        🚀 前往性能监控
+    </a>
+</div>
+
+{% endblock %}

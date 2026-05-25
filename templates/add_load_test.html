@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+{% block title %}新建压测任务{% endblock %}
+
+{% block content %}
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.form-header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f093fb;
+}
+
+.form-header h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    color: #2c3e50;
+}
+
+.form-header p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 4px solid #f093fb;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row-full {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+}
+
+.help-text {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.param-preview {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 24px;
+}
+
+.param-preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+.param-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.param-preview-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: #fff;
+    border-radius: 4px;
+}
+
+.param-preview-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.param-preview-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f5576c;
+}
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>⚡ 新建压测任务</h2>
+        <p>配置并发参数，测试接口在高负载下的性能表现</p>
+    </div>
+
+    <form method="post" action="/load-tests/add" id="loadTestForm">
+        <!-- 基本信息 -->
+        <div class="form-section">
+            <div class="form-section-title">基本信息</div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>任务名称 *</label>
+                    <input type="text" name="name" class="form-control" required
+                           placeholder="例如：用户登录接口压测">
+                    <div class="help-text">为这个压测任务起一个描述性的名称</div>
+                </div>
+            </div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>目标接口 *</label>
+                    <select name="test_case_id" class="form-control" required>
+                        <option value="">请选择测试用例</option>
+                        {% for case in test_cases %}
+                        <option value="{{ case.id }}">{{ case.name }} - {{ case.method }} {{ case.url }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">选择要进行压测的接口</div>
+                </div>
+            </div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>任务描述</label>
+                    <textarea name="description" class="form-control" rows="3"
+                              placeholder="描述这个压测任务的目的和预期目标"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 并发参数 -->
+        <div class="form-section">
+            <div class="form-section-title">并发参数</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>并发用户数 *</label>
+                    <input type="number" name="concurrent_users" class="form-control"
+                           value="10" min="1" max="1000" required
+                           onchange="updatePreview()">
+                    <div class="help-text">同时发起请求的虚拟用户数</div>
+                </div>
+
+                <div class="form-group">
+                    <label>持续时间（秒）*</label>
+                    <input type="number" name="duration" class="form-control"
+                           value="60" min="1" max="3600" required
+                           onchange="updatePreview()">
+                    <div class="help-text">压测持续的时间</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ramp-up时间（秒）</label>
+                    <input type="number" name="ramp_up_time" class="form-control"
+                           value="0" min="0" max="600"
+                           onchange="updatePreview()">
+                    <div class="help-text">逐步增加到目标并发数的时间，0表示立即达到</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 定时配置 -->
+        <div class="form-section">
+            <div class="form-section-title">定时配置（可选）</div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="is_scheduled" value="1" onchange="toggleSchedule()">
+                        启用定时执行
+                    </label>
+                    <div class="help-text">勾选后可以配置定时自动执行压测</div>
+                </div>
+            </div>
+
+            <div id="scheduleConfig" style="display:none;">
+                <div class="form-row-full">
+                    <div class="form-group">
+                        <label for="cron_mode">执行频率</label>
+                        <select id="cron_mode" class="form-control" onchange="handleCronModeChange()">
+                            <option value="preset">选择常用频率（推荐）</option>
+                            <option value="custom">自定义Cron表达式</option>
+                        </select>
+                        <div class="help-text">选择预设频率更简单，也可以自定义Cron表达式</div>
+                    </div>
+                </div>
+
+                <!-- 预设频率选择 -->
+                <div id="preset_mode" class="form-row-full">
+                    <div class="form-group">
+                        <label for="cron_preset">选择执行频率</label>
+                        <select id="cron_preset" class="form-control" onchange="updateCronFromPreset()">
+                            <option value="">-- 请选择执行频率 --</option>
+                            <optgroup label="⏱️ 分钟级">
+                                <option value="*/5 * * * *">每5分钟执行一次</option>
+                                <option value="*/10 * * * *">每10分钟执行一次</option>
+                                <option value="*/15 * * * *">每15分钟执行一次</option>
+                                <option value="*/30 * * * *">每30分钟执行一次</option>
+                            </optgroup>
+                            <optgroup label="⏰ 小时级">
+                                <option value="0 * * * *">每小时执行一次</option>
+                                <option value="0 */2 * * *">每2小时执行一次</option>
+                                <option value="0 */6 * * *">每6小时执行一次</option>
+                                <option value="0 */12 * * *">每12小时执行一次</option>
+                            </optgroup>
+                            <optgroup label="📅 每天">
+                                <option value="0 2 * * *">每天凌晨2:00</option>
+                                <option value="0 6 * * *">每天早上6:00</option>
+                                <option value="0 9 * * *">每天上午9:00</option>
+                                <option value="0 18 * * *">每天下午18:00</option>
+                                <option value="0 22 * * *">每天晚上22:00</option>
+                            </optgroup>
+                            <optgroup label="📆 工作日">
+                                <option value="0 9 * * 1-5">工作日上午9:00</option>
+                                <option value="0 18 * * 1-5">工作日下午18:00</option>
+                            </optgroup>
+                            <optgroup label="📌 每周">
+                                <option value="0 9 * * 1">每周一上午9:00</option>
+                                <option value="0 0 * * 0">每周日凌晨0:00</option>
+                            </optgroup>
+                        </select>
+                        <div class="help-text">从常用频率中选择，系统会自动生成Cron表达式</div>
+                    </div>
+                </div>
+
+                <!-- 自定义Cron表达式 -->
+                <div id="custom_mode" class="form-row-full" style="display: none;">
+                    <div class="form-group">
+                        <label>Cron表达式</label>
+                        <input type="text" name="schedule_cron" id="schedule_cron" class="form-control"
+                               placeholder="0 2 * * * (每天凌晨2点)">
+                        <div class="help-text">
+                            格式：分 时 日 月 周<br>
+                            示例：<br>
+                            • 0 2 * * * - 每天凌晨2点<br>
+                            • 0 */6 * * * - 每6小时<br>
+                            • 0 9 * * 1 - 每周一上午9点
+                        </div>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-top: 12px;">
+                        <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #333;">💡 常用示例（点击快速填入）</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
+                            <div style="padding: 8px; background: white; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+                                 onclick="setCronCustom('*/5 * * * *')"
+                                 onmouseover="this.style.borderColor='#f093fb'; this.style.boxShadow='0 2px 4px rgba(240,147,251,0.2)'"
+                                 onmouseout="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                <code style="display: block; font-size: 12px; color: #f5576c; margin-bottom: 4px;">*/5 * * * *</code>
+                                <span style="display: block; font-size: 11px; color: #666;">每5分钟</span>
+                            </div>
+                            <div style="padding: 8px; background: white; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+                                 onclick="setCronCustom('0 */6 * * *')"
+                                 onmouseover="this.style.borderColor='#f093fb'; this.style.boxShadow='0 2px 4px rgba(240,147,251,0.2)'"
+                                 onmouseout="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                <code style="display: block; font-size: 12px; color: #f5576c; margin-bottom: 4px;">0 */6 * * *</code>
+                                <span style="display: block; font-size: 11px; color: #666;">每6小时</span>
+                            </div>
+                            <div style="padding: 8px; background: white; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+                                 onclick="setCronCustom('0 2 * * *')"
+                                 onmouseover="this.style.borderColor='#f093fb'; this.style.boxShadow='0 2px 4px rgba(240,147,251,0.2)'"
+                                 onmouseout="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                <code style="display: block; font-size: 12px; color: #f5576c; margin-bottom: 4px;">0 2 * * *</code>
+                                <span style="display: block; font-size: 11px; color: #666;">每天凌晨2点</span>
+                            </div>
+                            <div style="padding: 8px; background: white; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; transition: all 0.2s;"
+                                 onclick="setCronCustom('0 9 * * 1')"
+                                 onmouseover="this.style.borderColor='#f093fb'; this.style.boxShadow='0 2px 4px rgba(240,147,251,0.2)'"
+                                 onmouseout="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                <code style="display: block; font-size: 12px; color: #f5576c; margin-bottom: 4px;">0 9 * * 1</code>
+                                <span style="display: block; font-size: 11px; color: #666;">每周一9点</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 显示当前Cron表达式 -->
+                <div class="form-row-full" style="background: #e3f2fd; padding: 12px; border-radius: 6px; border-left: 4px solid #2196f3; margin-top: 12px;">
+                    <label style="margin-bottom: 8px; color: #1565c0; font-weight: 600; display: block;">📋 当前Cron表达式</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <code id="current_cron_display" style="flex: 1; background: white; padding: 10px; border-radius: 4px; font-size: 14px; color: #d32f2f;">未设置</code>
+                        <button type="button" class="btn btn-small" onclick="copyCronExpr()" style="background: #2196f3; color: white; padding: 8px 16px;">📋 复制</button>
+                    </div>
+                    <small id="cron_desc_display" style="display: block; margin-top: 8px; color: #1565c0;">启用定时后请选择执行频率</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数预览 -->
+        <div class="param-preview">
+            <div class="param-preview-title">📊 压测预览</div>
+            <div class="param-preview-grid">
+                <div class="param-preview-item">
+                    <span class="param-preview-label">并发用户</span>
+                    <span class="param-preview-value" id="preview-users">10 个</span>
+                </div>
+                <div class="param-preview-item">
+                    <span class="param-preview-label">持续时间</span>
+                    <span class="param-preview-value" id="preview-duration">60 秒</span>
+                </div>
+                <div class="param-preview-item">
+                    <span class="param-preview-label">加压时间</span>
+                    <span class="param-preview-value" id="preview-rampup">0 秒</span>
+                </div>
+                <div class="param-preview-item">
+                    <span class="param-preview-label">预计请求数</span>
+                    <span class="param-preview-value" id="preview-requests">~600 次</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="form-actions">
+            <a href="/load-tests" class="btn" style="background:#6c757d">取消</a>
+            <button type="submit" class="btn btn-success">创建压测任务</button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Cron表达式描述映射
+const cronDescriptions = {
+    '*/5 * * * *': '每5分钟执行一次',
+    '*/10 * * * *': '每10分钟执行一次',
+    '*/15 * * * *': '每15分钟执行一次',
+    '*/30 * * * *': '每30分钟执行一次',
+    '0 * * * *': '每小时执行一次',
+    '0 */2 * * *': '每2小时执行一次',
+    '0 */6 * * *': '每6小时执行一次',
+    '0 */12 * * *': '每12小时执行一次',
+    '0 2 * * *': '每天凌晨2:00执行',
+    '0 6 * * *': '每天早上6:00执行',
+    '0 9 * * *': '每天上午9:00执行',
+    '0 18 * * *': '每天下午18:00执行',
+    '0 22 * * *': '每天晚上22:00执行',
+    '0 9 * * 1-5': '工作日上午9:00执行',
+    '0 18 * * 1-5': '工作日下午18:00执行',
+    '0 9 * * 1': '每周一上午9:00执行',
+    '0 0 * * 0': '每周日凌晨0:00执行'
+};
+
+function handleCronModeChange() {
+    const mode = document.getElementById('cron_mode').value;
+    const presetMode = document.getElementById('preset_mode');
+    const customMode = document.getElementById('custom_mode');
+
+    if (mode === 'preset') {
+        presetMode.style.display = 'block';
+        customMode.style.display = 'none';
+        updateCronFromPreset();
+    } else {
+        presetMode.style.display = 'none';
+        customMode.style.display = 'block';
+        updateCurrentCronDisplay();
+    }
+}
+
+function updateCronFromPreset() {
+    const preset = document.getElementById('cron_preset').value;
+    const cronInput = document.getElementById('schedule_cron');
+
+    if (preset) {
+        cronInput.value = preset;
+        updateCurrentCronDisplay(preset);
+    } else {
+        cronInput.value = '';
+        document.getElementById('current_cron_display').textContent = '未设置';
+        document.getElementById('cron_desc_display').textContent = '请选择执行频率';
+    }
+}
+
+function updateCurrentCronDisplay(cron) {
+    const cronInput = document.getElementById('schedule_cron');
+    const currentCron = document.getElementById('current_cron_display');
+    const cronDesc = document.getElementById('cron_desc_display');
+
+    const expression = cron || cronInput.value.trim();
+
+    if (expression) {
+        currentCron.textContent = expression;
+        currentCron.style.color = '#2e7d32';
+
+        if (cronDescriptions[expression]) {
+            cronDesc.textContent = '✓ ' + cronDescriptions[expression];
+            cronDesc.style.color = '#2e7d32';
+        } else {
+            cronDesc.textContent = '⚠️ 自定义表达式，请确保格式正确';
+            cronDesc.style.color = '#f57c00';
+        }
+    } else {
+        currentCron.textContent = '未设置';
+        currentCron.style.color = '#d32f2f';
+        cronDesc.textContent = '请选择执行频率或输入Cron表达式';
+        cronDesc.style.color = '#1565c0';
+    }
+}
+
+function setCronCustom(expression) {
+    document.getElementById('schedule_cron').value = expression;
+    updateCurrentCronDisplay(expression);
+}
+
+function copyCronExpr() {
+    const cronText = document.getElementById('current_cron_display').textContent;
+    if (cronText && cronText !== '未设置') {
+        navigator.clipboard.writeText(cronText).then(() => {
+            alert('✓ Cron表达式已复制到剪贴板');
+        }).catch(() => {
+            alert('复制失败，请手动复制');
+        });
+    } else {
+        alert('请先设置Cron表达式');
+    }
+}
+
+function toggleSchedule() {
+    const checkbox = document.querySelector('[name="is_scheduled"]');
+    const config = document.getElementById('scheduleConfig');
+    config.style.display = checkbox.checked ? 'block' : 'none';
+
+    if (checkbox.checked) {
+        updateCurrentCronDisplay();
+    }
+}
+
+function updatePreview() {
+    const users = parseInt(document.querySelector('[name="concurrent_users"]').value) || 10;
+    const duration = parseInt(document.querySelector('[name="duration"]').value) || 60;
+    const rampup = parseInt(document.querySelector('[name="ramp_up_time"]').value) || 0;
+
+    document.getElementById('preview-users').textContent = users + ' 个';
+    document.getElementById('preview-duration').textContent = duration + ' 秒';
+    document.getElementById('preview-rampup').textContent = rampup + ' 秒';
+
+    const estimatedRequests = users * duration;
+    document.getElementById('preview-requests').textContent = '~' + estimatedRequests + ' 次';
+}
+
+// 监听自定义输入框变化
+document.addEventListener('DOMContentLoaded', function() {
+    const cronInput = document.getElementById('schedule_cron');
+    if (cronInput) {
+        cronInput.addEventListener('input', function() {
+            updateCurrentCronDisplay();
+        });
+    }
+});
+
+window.onload = updatePreview;
+</script>
+{% endblock %}

@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% block title %}性能测试报告{% endblock %}
+
+{% block content %}
+<style>
+/* 全局字体优化 */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.rpt-wrap {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "微软雅黑", sans-serif;
+}
+
+/* header */
+.rpt-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+.rpt-header h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.rpt-header .meta { font-size: 13px; opacity: .85; line-height: 1.8; }
+
+/* action bar */
+.rpt-actions { margin-bottom: 20px; display: flex; gap: 10px; }
+
+/* kpi grid */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.kpi-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    border-top: 4px solid #667eea;
+}
+.kpi-card.green  { border-top-color: #28a745; }
+.kpi-card.blue   { border-top-color: #17a2b8; }
+.kpi-card.orange { border-top-color: #fd7e14; }
+.kpi-card.purple { border-top-color: #6f42c1; }
+.kpi-val {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+.kpi-val.green  { color: #28a745; }
+.kpi-val.blue   { color: #17a2b8; }
+.kpi-val.orange { color: #fd7e14; }
+.kpi-val.purple { color: #6f42c1; }
+.kpi-lbl {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* section card */
+.rpt-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.rpt-section h2 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+    letter-spacing: 0.5px;
+}
+
+/* chart containers */
+.chart-box { width: 100%; height: 380px; }
+.chart-box-sm { width: 100%; height: 320px; }
+
+/* two-column row */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.two-col .rpt-section { margin-bottom: 0; }
+
+/* summary table */
+.sum-table { width: 100%; border-collapse: collapse; }
+.sum-table th, .sum-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+.sum-table th { background: #f8f9fa; color: #555; font-weight: 600; width: 50%; }
+.sum-table tr:last-child td, .sum-table tr:last-child th { border-bottom: none; }
+
+@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 768px)  {
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .two-col  { grid-template-columns: 1fr; }
+}
+@media print {
+    .rpt-actions { display: none; }
+    .rpt-section { page-break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    .chart-box, .chart-box-sm { height: 280px; }
+}
+</style>
+
+<div class="rpt-wrap">
+
+    <!-- 标题 -->
+    <div class="rpt-header">
+        <h1>📊 性能测试报告</h1>
+        <div class="meta">
+            生成时间：{{ summary.generated_at }}&nbsp;&nbsp;|&nbsp;&nbsp;
+            总请求数：{{ summary.total_requests }}&nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if batch_result %}测试用例：{{ batch_result.test_case_name }}{% endif %}
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="rpt-actions">
+        <a href="/performance-report" class="btn btn-secondary">← 返回列表</a>
+        <button onclick="window.print()" class="btn btn-primary">🖨️ 打印 / 导出PDF</button>
+    </div>
+
+    <!-- KPI 卡片 -->
+    <div class="kpi-grid">
+        <div class="kpi-card green">
+            <div class="kpi-val green">{{ summary.success_rate }}%</div>
+            <div class="kpi-lbl">成功率</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-val blue">{{ summary.avg_response_time }} ms</div>
+            <div class="kpi-lbl">平均响应时间</div>
+        </div>
+        <div class="kpi-card purple">
+            <div class="kpi-val purple">{{ summary.tps }}</div>
+            <div class="kpi-lbl">TPS（每秒事务数）</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-val orange">{{ summary.p90 }} ms</div>
+            <div class="kpi-lbl">P90 响应时间</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-val orange">{{ summary.p95 }} ms</div>
+            <div class="kpi-lbl">P95 响应时间</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-val orange">{{ summary.p99 }} ms</div>
+            <div class="kpi-lbl">P99 响应时间</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-val blue">{{ summary.min_response_time }} ms</div>
+            <div class="kpi-lbl">最小响应时间</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-val blue">{{ summary.max_response_time }} ms</div>
+            <div class="kpi-lbl">最大响应时间</div>
+        </div>
+    </div>
+
+    <!-- 响应时间趋势（全宽） -->
+    <div class="rpt-section">
+        <h2>📈 响应时间趋势</h2>
+        <div id="chart-trend" class="chart-box"></div>
+    </div>
+
+    <!-- 成功率分布 + 仪表盘（并排） -->
+    <div class="two-col">
+        <div class="rpt-section">
+            <h2>🥧 成功率分布</h2>
+            <div id="chart-pie" class="chart-box-sm"></div>
+        </div>
+        <div class="rpt-section">
+            <h2>🎯 成功率仪表盘</h2>
+            <div id="chart-gauge" class="chart-box-sm"></div>
+        </div>
+    </div>
+
+    <!-- 百分位对比（全宽） -->
+    <div class="rpt-section">
+        <h2>📊 百分位响应时间对比</h2>
+        <div id="chart-pct" class="chart-box"></div>
+    </div>
+
+    <!-- 响应时间分布（全宽） -->
+    <div class="rpt-section">
+        <h2>📉 响应时间分布</h2>
+        <div id="chart-dist" class="chart-box"></div>
+    </div>
+
+    <!-- 汇总表格 -->
+    <div class="rpt-section">
+        <h2>📋 详细统计</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+            <table class="sum-table">
+                <tr><th>总请求数</th><td>{{ summary.total_requests }}</td></tr>
+                <tr><th>成功请求数</th><td style="color:#28a745">{{ summary.success_count }}</td></tr>
+                <tr><th>失败请求数</th><td style="color:#dc3545">{{ summary.failed_count }}</td></tr>
+                <tr><th>错误请求数</th><td style="color:#fd7e14">{{ summary.error_count }}</td></tr>
+                <tr><th>成功率</th><td><strong>{{ summary.success_rate }}%</strong></td></tr>
+                <tr><th>TPS</th><td><strong>{{ summary.tps }}</strong></td></tr>
+            </table>
+            <table class="sum-table">
+                <tr><th>平均响应时间</th><td>{{ summary.avg_response_time }} ms</td></tr>
+                <tr><th>P50（中位数）</th><td>{{ summary.p50 }} ms</td></tr>
+                <tr><th>P90</th><td>{{ summary.p90 }} ms</td></tr>
+                <tr><th>P95</th><td>{{ summary.p95 }} ms</td></tr>
+                <tr><th>P99</th><td>{{ summary.p99 }} ms</td></tr>
+                <tr><th>最大 / 最小</th><td>{{ summary.max_response_time }} / {{ summary.min_response_time }} ms</td></tr>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ECharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+var CD = {{ chart_data | tojson }};
+
+/* X轴用序号，tooltip显示完整时间，彻底避免标签遮挡 */
+var trendIndex = CD.trend_x.map(function(_, i){ return i + 1; });
+var distIndex  = CD.dist_x.map(function(_, i){ return i + 1; });
+
+/* ---- 趋势折线图 ---- */
+echarts.init(document.getElementById('chart-trend')).setOption({
+    tooltip: {
+        trigger: 'axis',
+        formatter: function(params) {
+            var i = params[0].dataIndex;
+            return '第' + (i+1) + '次&nbsp;&nbsp;' + (CD.trend_x[i] || '') +
+                   '<br/>响应时间：<b>' + params[0].value + ' ms</b>';
+        }
+    },
+    grid: { left: 70, right: 20, top: 30, bottom: 40 },
+    xAxis: {
+        type: 'category',
+        data: trendIndex,
+        name: '请求序号',
+        nameLocation: 'middle',
+        nameGap: 25,
+        axisLabel: { fontSize: 11, interval: 'auto' }
+    },
+    yAxis: {
+        type: 'value',
+        name: '响应时间(ms)',
+        nameLocation: 'end',
+        nameTextStyle: { padding: [0, 0, 0, 40] }
+    },
+    dataZoom: [
+        { type: 'inside' },
+        { type: 'slider', height: 16, bottom: 4 }
+    ],
+    series: [{
+        name: '响应时间',
+        type: 'line',
+        data: CD.trend_y,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 2, color: '#667eea' },
+        areaStyle: { color: { type:'linear', x:0,y:0,x2:0,y2:1,
+            colorStops:[{offset:0,color:'rgba(102,126,234,.4)'},{offset:1,color:'rgba(102,126,234,.02)'}] } }
+    }]
+});
+
+/* ---- 饼图 ---- */
+echarts.init(document.getElementById('chart-pie')).setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    legend: { orient: 'vertical', left: 10, top: 'center', textStyle: { fontSize: 13 } },
+    color: ['#28a745','#dc3545','#fd7e14'],
+    series: [{
+        type: 'pie',
+        radius: ['38%','65%'],
+        center: ['62%','50%'],
+        label: { formatter: '{b}\n{d}%', fontSize: 12, lineHeight: 18 },
+        labelLine: { length: 10, length2: 8 },
+        data: CD.pie_data
+    }]
+});
+
+/* ---- 仪表盘 ---- */
+echarts.init(document.getElementById('chart-gauge')).setOption({
+    series: [{
+        type: 'gauge',
+        radius: '80%',
+        center: ['50%','55%'],
+        startAngle: 200, endAngle: -20,
+        min: 0, max: 100,
+        splitNumber: 5,
+        axisLine: {
+            lineStyle: { width: 18,
+                color: [[.3,'#dc3545'],[.7,'#ffc107'],[1,'#28a745']] }
+        },
+        pointer: { length: '60%', width: 5 },
+        axisTick: { show: false },
+        splitLine: { length: 10, lineStyle: { width: 2, color: '#fff' } },
+        axisLabel: { distance: 22, fontSize: 11 },
+        detail: { valueAnimation: true, fontSize: 26, fontWeight: 'bold',
+                  formatter: '{value}%', color: '#333', offsetCenter: [0,'30%'] },
+        title: { fontSize: 13, color: '#666', offsetCenter: [0,'52%'] },
+        data: [{ value: CD.success_rate, name: '成功率' }]
+    }]
+});
+
+/* ---- 百分位柱状图 ---- */
+echarts.init(document.getElementById('chart-pct')).setOption({
+    tooltip: { trigger: 'axis', formatter: '{b}: {c} ms' },
+    grid: { left: 70, right: 20, top: 30, bottom: 40 },
+    xAxis: {
+        type: 'category',
+        data: ['P50','P90','P95','P99'],
+        axisLabel: { fontSize: 13, fontWeight: 'bold' },
+        name: '百分位', nameLocation: 'middle', nameGap: 25
+    },
+    yAxis: { type: 'value', name: '响应时间(ms)', nameLocation: 'end',
+             nameTextStyle: { padding: [0,0,0,40] } },
+    series: [{
+        type: 'bar',
+        data: [
+            { value: CD.pct_values[0], itemStyle: { color: '#28a745' } },
+            { value: CD.pct_values[1], itemStyle: { color: '#17a2b8' } },
+            { value: CD.pct_values[2], itemStyle: { color: '#fd7e14' } },
+            { value: CD.pct_values[3], itemStyle: { color: '#dc3545' } }
+        ],
+        label: { show: true, position: 'top', fontSize: 13, fontWeight: 'bold',
+                 formatter: '{c} ms' },
+        barMaxWidth: 80
+    }]
+});
+
+/* ---- 分布直方图 ---- */
+echarts.init(document.getElementById('chart-dist')).setOption({
+    tooltip: {
+        trigger: 'axis',
+        formatter: function(params) {
+            var i = params[0].dataIndex;
+            return '区间：' + (CD.dist_x[i] || '') + ' ms' +
+                   '<br/>请求数：<b>' + params[0].value + '</b>';
+        }
+    },
+    grid: { left: 70, right: 20, top: 30, bottom: 40 },
+    xAxis: {
+        type: 'category',
+        data: distIndex,
+        name: '区间序号（悬停查看范围）',
+        nameLocation: 'middle',
+        nameGap: 25,
+        axisLabel: { fontSize: 11, interval: 'auto' }
+    },
+    yAxis: { type: 'value', name: '请求数量', nameLocation: 'end',
+             nameTextStyle: { padding: [0,0,0,20] } },
+    series: [{
+        type: 'bar',
+        data: CD.dist_y,
+        itemStyle: { color: '#667eea' },
+        label: { show: false }
+    }]
+});
+
+/* resize */
+window.addEventListener('resize', function() {
+    ['chart-trend','chart-pie','chart-gauge','chart-pct','chart-dist'].forEach(function(id) {
+        var c = echarts.getInstanceByDom(document.getElementById(id));
+        if (c) c.resize();
+    });
+});
+</script>
+{% endblock %}

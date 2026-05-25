@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}示例教程 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #ffc107;">
+    <p style="margin: 0; color: #856404;">
+        <strong>📚 示例教程</strong> - 这里的示例不会参与统计，放心练习！
+    </p>
+</div>
+
+<h1 style="margin-bottom: 2rem;">🎓 智能断言使用教程</h1>
+
+<!-- 基础示例 -->
+<div class="card">
+    <h2>📝 示例1：基础断言（推荐新手）</h2>
+
+    <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: #1976d2; margin-bottom: 0.5rem;">测试目标</h3>
+        <p style="margin: 0;">测试一个返回用户信息的API，验证响应数据是否正确</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+            <h4>📤 API信息</h4>
+            <p><strong>URL:</strong> https://jsonplaceholder.typicode.com/users/1</p>
+            <p><strong>方法:</strong> GET</p>
+            <p><strong>期望状态码:</strong> 200</p>
+        </div>
+        <div>
+            <h4>📥 响应示例</h4>
+            <pre style="background: #f5f5f5; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem;">{
+  "id": 1,
+  "name": "Leanne Graham",
+  "email": "Sincere@april.biz"
+}</pre>
+        </div>
+    </div>
+
+    <h4>✅ 断言配置（复制到"断言规则"框）</h4>
+    <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto;">[
+  {
+    "type": "equals",
+    "path": "id",
+    "expected": 1,
+    "description": "用户ID应该是1"
+  },
+  {
+    "type": "exists",
+    "path": "name",
+    "description": "name字段应该存在"
+  },
+  {
+    "type": "type",
+    "path": "email",
+    "expected": "string",
+    "description": "email应该是字符串类型"
+  }
+]</pre>
+
+    <button onclick="copyToClipboard('example1')" class="btn btn-success" style="margin-top: 0.5rem;">
+        📋 复制断言配置
+    </button>
+    <a href="/test-cases/add" class="btn" style="margin-left: 0.5rem;">
+        ➕ 去添加测试用例
+    </a>
+</div>
+
+<!-- 进阶示例 -->
+<div class="card">
+    <h2>🚀 示例2：进阶断言（包含多种类型）</h2>
+
+    <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: #388e3c; margin-bottom: 0.5rem;">测试目标</h3>
+        <p style="margin: 0;">测试文章列表API，验证数据类型、数量、内容等</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+            <h4>📤 API信息</h4>
+            <p><strong>URL:</strong> https://jsonplaceholder.typicode.com/posts</p>
+            <p><strong>方法:</strong> GET</p>
+            <p><strong>期望状态码:</strong> 200</p>
+        </div>
+        <div>
+            <h4>📥 响应示例</h4>
+            <pre style="background: #f5f5f5; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem;">[
+  {
+    "userId": 1,
+    "id": 1,
+    "title": "sunt aut...",
+    "body": "quia et..."
+  },
+  ...
+]</pre>
+        </div>
+    </div>
+
+    <h4>✅ 断言配置</h4>
+    <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto;">[
+  {
+    "type": "type",
+    "path": "$",
+    "expected": "array",
+    "description": "响应应该是数组"
+  },
+  {
+    "type": "length",
+    "path": "$",
+    "expected": 100,
+    "description": "应该返回100条数据"
+  },
+  {
+    "type": "exists",
+    "path": "[0].id",
+    "description": "第一条数据应该有id字段"
+  },
+  {
+    "type": "type",
+    "path": "[0].userId",
+    "expected": "integer",
+    "description": "userId应该是整数"
+  }
+]</pre>
+
+    <button onclick="copyToClipboard('example2')" class="btn btn-success" style="margin-top: 0.5rem;">
+        📋 复制断言配置
+    </button>
+</div>
+
+<!-- 高级示例 -->
+<div class="card">
+    <h2>⚡ 示例3：高级断言（正则、范围检查）</h2>
+
+    <div style="background: #fce4ec; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: #c2185b; margin-bottom: 0.5rem;">测试目标</h3>
+        <p style="margin: 0;">验证数据格式、范围、正则匹配等复杂场景</p>
+    </div>
+
+    <h4>✅ 断言配置示例</h4>
+    <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto;">[
+  {
+    "type": "regex",
+    "path": "email",
+    "expected": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+    "description": "邮箱格式应该正确"
+  },
+  {
+    "type": "greater_than",
+    "path": "age",
+    "expected": 0,
+    "description": "年龄应该大于0"
+  },
+  {
+    "type": "less_than",
+    "path": "age",
+    "expected": 150,
+    "description": "年龄应该小于150"
+  },
+  {
+    "type": "contains",
+    "path": "address",
+    "expected": "Street",
+    "description": "地址应该包含Street"
+  }
+]</pre>
+
+    <button onclick="copyToClipboard('example3')" class="btn btn-success" style="margin-top: 0.5rem;">
+        📋 复制断言配置
+    </button>
+</div>
+
+<!-- 断言类型说明 -->
+<div class="card">
+    <h2>📖 所有断言类型说明</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>类型</th>
+                <th>说明</th>
+                <th>示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>equals</code></td>
+                <td>值等于预期值</td>
+                <td><code>{"type": "equals", "path": "code", "expected": 200}</code></td>
+            </tr>
+            <tr>
+                <td><code>contains</code></td>
+                <td>值包含指定字符串</td>
+                <td><code>{"type": "contains", "path": "message", "expected": "success"}</code></td>
+            </tr>
+            <tr>
+                <td><code>not_contains</code></td>
+                <td>值不包含指定字符串</td>
+                <td><code>{"type": "not_contains", "path": "error", "expected": "failed"}</code></td>
+            </tr>
+            <tr>
+                <td><code>greater_than</code></td>
+                <td>值大于预期值</td>
+                <td><code>{"type": "greater_than", "path": "age", "expected": 18}</code></td>
+            </tr>
+            <tr>
+                <td><code>less_than</code></td>
+                <td>值小于预期值</td>
+                <td><code>{"type": "less_than", "path": "price", "expected": 1000}</code></td>
+            </tr>
+            <tr>
+                <td><code>regex</code></td>
+                <td>值匹配正则表达式</td>
+                <td><code>{"type": "regex", "path": "phone", "expected": "^1[3-9]\\d{9}$"}</code></td>
+            </tr>
+            <tr>
+                <td><code>exists</code></td>
+                <td>字段存在</td>
+                <td><code>{"type": "exists", "path": "data.id"}</code></td>
+            </tr>
+            <tr>
+                <td><code>not_exists</code></td>
+                <td>字段不存在</td>
+                <td><code>{"type": "not_exists", "path": "error"}</code></td>
+            </tr>
+            <tr>
+                <td><code>type</code></td>
+                <td>检查数据类型</td>
+                <td><code>{"type": "type", "path": "name", "expected": "string"}</code></td>
+            </tr>
+            <tr>
+                <td><code>length</code></td>
+                <td>检查长度</td>
+                <td><code>{"type": "length", "path": "items", "expected": 10}</code></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 使用步骤 -->
+<div class="card">
+    <h2>🎯 使用步骤</h2>
+
+    <div style="line-height: 2;">
+        <h3 style="color: #3498db;">第1步：选择示例</h3>
+        <p>从上面选择一个示例，点击"复制断言配置"按钮</p>
+
+        <h3 style="color: #3498db; margin-top: 1.5rem;">第2步：添加测试用例</h3>
+        <p>点击顶部导航"测试用例" → "添加新用例"</p>
+
+        <h3 style="color: #3498db; margin-top: 1.5rem;">第3步：填写信息</h3>
+        <ul>
+            <li>用例名称：随便起个名字</li>
+            <li>接口地址：复制示例中的URL</li>
+            <li>请求方式：选择GET</li>
+            <li>期望状态码：200</li>
+            <li><strong>断言规则：粘贴刚才复制的内容</strong></li>
+        </ul>
+
+        <h3 style="color: #3498db; margin-top: 1.5rem;">第4步：执行测试</h3>
+        <p>保存后，在测试用例列表点击"▶ 执行"</p>
+
+        <h3 style="color: #3498db; margin-top: 1.5rem;">第5步：查看结果</h3>
+        <p>会弹出测试结果，显示每个断言是否通过</p>
+    </div>
+</div>
+
+<!-- 常见问题 -->
+<div class="card">
+    <h2>❓ 常见问题</h2>
+
+    <div style="line-height: 2;">
+        <p><strong>Q: 断言规则必须是JSON格式吗？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: 是的，必须是有效的JSON数组格式，注意逗号和引号。</p>
+
+        <p style="margin-top: 1rem;"><strong>Q: 可以不写断言吗？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: 可以，断言是可选的。不写断言就只检查状态码。</p>
+
+        <p style="margin-top: 1rem;"><strong>Q: path是什么意思？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: path是JSON路径，用来定位要检查的字段。例如"data.user.name"表示检查data对象下的user对象下的name字段。</p>
+
+        <p style="margin-top: 1rem;"><strong>Q: 断言失败了怎么办？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: 查看错误信息，检查是API返回的数据不对，还是断言配置写错了。</p>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 2rem; padding: 2rem; background: #e3f2fd; border-radius: 8px;">
+    <h2 style="color: #1976d2;">🎉 准备好了吗？</h2>
+    <p style="font-size: 1.1rem; margin: 1rem 0;">选择一个示例，复制断言配置，去添加测试用例试试吧！</p>
+    <a href="/test-cases/add" class="btn btn-success" style="font-size: 1.2rem; padding: 1rem 2rem;">
+        🚀 开始创建测试用例
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const examples = {
+    'example1': `[
+  {
+    "type": "equals",
+    "path": "id",
+    "expected": 1,
+    "description": "用户ID应该是1"
+  },
+  {
+    "type": "exists",
+    "path": "name",
+    "description": "name字段应该存在"
+  },
+  {
+    "type": "type",
+    "path": "email",
+    "expected": "string",
+    "description": "email应该是字符串类型"
+  }
+]`,
+    'example2': `[
+  {
+    "type": "type",
+    "path": "$",
+    "expected": "array",
+    "description": "响应应该是数组"
+  },
+  {
+    "type": "length",
+    "path": "$",
+    "expected": 100,
+    "description": "应该返回100条数据"
+  },
+  {
+    "type": "exists",
+    "path": "[0].id",
+    "description": "第一条数据应该有id字段"
+  },
+  {
+    "type": "type",
+    "path": "[0].userId",
+    "expected": "integer",
+    "description": "userId应该是整数"
+  }
+]`,
+    'example3': `[
+  {
+    "type": "regex",
+    "path": "email",
+    "expected": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$",
+    "description": "邮箱格式应该正确"
+  },
+  {
+    "type": "greater_than",
+    "path": "age",
+    "expected": 0,
+    "description": "年龄应该大于0"
+  },
+  {
+    "type": "less_than",
+    "path": "age",
+    "expected": 150,
+    "description": "年龄应该小于150"
+  },
+  {
+    "type": "contains",
+    "path": "address",
+    "expected": "Street",
+    "description": "地址应该包含Street"
+  }
+]`
+};
+
+function copyToClipboard(exampleId) {
+    const text = examples[exampleId];
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ 断言配置已复制到剪贴板！\n\n现在去"测试用例"页面添加用例，在"断言规则"框中粘贴即可。');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ 断言配置已复制！');
+    });
+}
+</script>
+{% endblock %}

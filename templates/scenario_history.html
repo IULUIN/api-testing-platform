@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}执行历史 - {{ scenario.name }}{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h2 style="margin:0;color:#2c3e50;">📜 执行历史：{{ scenario.name }}</h2>
+    <div style="display:flex;gap:8px;">
+        <button class="btn btn-success" onclick="runScenario({{ scenario.id }}, this)">▶ 再次执行</button>
+        <a href="/scenarios" class="btn" style="background:#6c757d">← 返回列表</a>
+    </div>
+</div>
+
+{% if history %}
+<div class="card" style="padding:0;overflow:hidden;">
+    <table>
+        <thead>
+            <tr>
+                <th>执行时间</th>
+                <th>结果</th>
+                <th>步骤</th>
+                <th>成功</th>
+                <th>失败</th>
+                <th>耗时</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in history %}
+        <tr>
+            <td>{{ r.executed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+                {% if r.status == 'success' %}
+                <span style="color:#28a745;font-weight:600;">✅ 成功</span>
+                {% else %}
+                <span style="color:#dc3545;font-weight:600;">❌ 失败</span>
+                {% endif %}
+            </td>
+            <td>{{ r.total_steps }}</td>
+            <td style="color:#28a745">{{ r.success_steps }}</td>
+            <td style="color:#dc3545">{{ r.failed_steps }}</td>
+            <td>{{ r.duration }} s</td>
+            <td><a href="/scenarios/results/{{ r.id }}" class="btn btn-small" style="background:#17a2b8">查看详情</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div style="text-align:center;padding:60px;color:#aaa;">
+    <h3>暂无执行记录</h3>
+    <p>点击「再次执行」运行该场景</p>
+</div>
+{% endif %}
+
+<script>
+function runScenario(id, btn) {
+    btn.disabled = true;
+    btn.textContent = '执行中…';
+    fetch('/scenarios/' + id + '/run', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                window.location.href = '/scenarios/results/' + d.result_id;
+            } else {
+                alert('执行失败：' + d.error);
+                btn.disabled = false;
+                btn.textContent = '▶ 再次执行';
+            }
+        })
+        .catch(() => {
+            alert('请求失败');
+            btn.disabled = false;
+            btn.textContent = '▶ 再次执行';
+        });
+}
+</script>
+{% endblock %}

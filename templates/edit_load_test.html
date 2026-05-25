@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% block title %}编辑压测任务{% endblock %}
+
+{% block content %}
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.form-header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f093fb;
+}
+
+.form-header h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    color: #2c3e50;
+}
+
+.form-header p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 4px solid #f093fb;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row-full {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+}
+
+.help-text {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.param-preview {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 24px;
+}
+
+.param-preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+.param-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.param-preview-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: #fff;
+    border-radius: 4px;
+}
+
+.param-preview-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.param-preview-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f5576c;
+}
+
+.cron-examples {
+    margin: 20px 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.cron-examples h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.example-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+}
+
+.example-item {
+    padding: 10px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.example-item:hover {
+    border-color: #f093fb;
+    box-shadow: 0 2px 4px rgba(240, 147, 251, 0.2);
+}
+
+.example-item code {
+    display: block;
+    font-size: 13px;
+    color: #f5576c;
+    margin-bottom: 4px;
+}
+
+.example-item span {
+    display: block;
+    font-size: 12px;
+    color: #666;
+}
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>✏️ 编辑压测任务</h2>
+        <p>修改并发参数和配置</p>
+    </div>
+
+    <form method="post" action="/load-tests/{{ load_test.id }}/edit" id="loadTestForm">
+        <!-- 基本信息 -->
+        <div class="form-section">
+            <div class="form-section-title">基本信息</div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>任务名称 *</label>
+                    <input type="text" name="name" class="form-control" required
+                           value="{{ load_test.name }}"
+                           placeholder="例如：用户登录接口压测">
+                    <div class="help-text">为这个压测任务起一个描述性的名称</div>
+                </div>
+            </div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>目标接口 *</label>
+                    <select name="test_case_id" class="form-control" required>
+                        <option value="">请选择测试用例</option>
+                        {% for case in test_cases %}
+                        <option value="{{ case.id }}" {% if case.id == load_test.test_case_id %}selected{% endif %}>
+                            {{ case.name }} - {{ case.method }} {{ case.url }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">选择要进行压测的接口</div>
+                </div>
+            </div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>任务描述</label>
+                    <textarea name="description" class="form-control" rows="3"
+                              placeholder="描述这个压测任务的目的和预期目标">{{ load_test.description or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 并发参数 -->
+        <div class="form-section">
+            <div class="form-section-title">并发参数</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>并发用户数 *</label>
+                    <input type="number" name="concurrent_users" class="form-control"
+                           value="{{ load_test.concurrent_users }}" min="1" max="1000" required
+                           onchange="updatePreview()">
+                    <div class="help-text">同时发起请求的虚拟用户数</div>
+                </div>
+
+                <div class="form-group">
+                    <label>持续时间（秒）*</label>
+                    <input type="number" name="duration" class="form-control"
+                           value="{{ load_test.duration }}" min="1" max="3600" required
+                           onchange="updatePreview()">
+                    <div class="help-text">压测持续的时间</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ramp-up时间（秒）</label>
+                    <input type="number" name="ramp_up_time" class="form-control"
+                           value="{{ load_test.ramp_up_time }}" min="0" max="600"
+                           onchange="updatePreview()">
+                    <div class="help-text">逐步增加到目标并发数的时间，0表示立即达到</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 定时配置 -->
+        <div class="form-section">
+            <div class="form-section-title">定时配置（可选）</div>
+
+            <div class="form-row-full">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="is_scheduled" value="1"
+                               {% if load_test.is_scheduled %}checked{% endif %}
+                               onchange="toggleSchedule()">
+                        启用定时执行
+                    </label>
+                    <div class="help-text">勾选后可以配置定时自动执行压测</div>
+                </div>
+            </div>
+
+            <div id="scheduleConfig" style="display:{% if load_test.is_scheduled %}block{% else %}none{% endif %};">
+                <div class="form-row-full">
+                    <div class="form-group">
+                        <label>Cron表达式</label>
+                        <input type="text" name="schedule_cron" id="cron_expression" class="form-control"
+                               value="{{ load_test.schedule_cron or '' }}"
+                               placeholder="0 2 * * * (每天凌晨2点)">
+                        <div class="help-text">
+                            格式：分 时 日 月 周
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cron-examples">
+                    <h4>💡 常用Cron表达式（点击快速填入）</h4>
+                    <div class="example-grid">
+                        <div class="example-item" onclick="setCron('*/5 * * * *')">
+                            <code>*/5 * * * *</code>
+                            <span>每5分钟</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 * * * *')">
+                            <code>0 * * * *</code>
+                            <span>每小时</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 2 * * *')">
+                            <code>0 2 * * *</code>
+                            <span>每天凌晨2点</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 */6 * * *')">
+                            <code>0 */6 * * *</code>
+                            <span>每6小时</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 9 * * 1-5')">
+                            <code>0 9 * * 1-5</code>
+                            <span>工作日9:00</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 9 * * 1')">
+                            <code>0 9 * * 1</code>
+                            <span>每周一9:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数预览 -->
+        <div class="param-preview">
+            <div class="param-preview-title">📊 压测预览</div>
+            <div class="param-preview-grid">
+                <div class="param-preview-item">
+                    <span class="param-preview-label">并发用户</span>
+                    <span class="param-preview-value" id="preview-users">{{ load_test.concurrent_users }} 个</span>
+                </div>
+                <div class="param-preview-item">
+                    <span class="param-preview-label">持续时间</span>
+                    <span class="param-preview-value" id="preview-duration">{{ load_test.duration }} 秒</span>
+                </div>
+                <div class="param-preview-item">
+                    <span class="param-preview-label">加压时间</span>
+                    <span class="param-preview-value" id="preview-rampup">{{ load_test.ramp_up_time }} 秒</span>
+                </div>
+                <div class="param-preview-item">
+                    <span class="param-preview-label">预计请求数</span>
+                    <span class="param-preview-value" id="preview-requests">~{{ load_test.concurrent_users * load_test.duration }} 次</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="form-actions">
+            <a href="/load-tests" class="btn" style="background:#6c757d">取消</a>
+            <button type="submit" class="btn btn-success">保存修改</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function setCron(expression) {
+    document.getElementById('cron_expression').value = expression;
+}
+
+function toggleSchedule() {
+    const checkbox = document.querySelector('[name="is_scheduled"]');
+    const config = document.getElementById('scheduleConfig');
+    config.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+function updatePreview() {
+    const users = parseInt(document.querySelector('[name="concurrent_users"]').value) || 10;
+    const duration = parseInt(document.querySelector('[name="duration"]').value) || 60;
+    const rampup = parseInt(document.querySelector('[name="ramp_up_time"]').value) || 0;
+
+    document.getElementById('preview-users').textContent = users + ' 个';
+    document.getElementById('preview-duration').textContent = duration + ' 秒';
+    document.getElementById('preview-rampup').textContent = rampup + ' 秒';
+
+    // 粗略估算请求数（假设每个用户每秒1次请求）
+    const estimatedRequests = users * duration;
+    document.getElementById('preview-requests').textContent = '~' + estimatedRequests + ' 次';
+}
+
+// 页面加载时更新预览
+window.onload = updatePreview;
+</script>
+{% endblock %}

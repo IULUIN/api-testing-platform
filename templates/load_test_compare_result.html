@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}对比结果{% endblock %}
+
+{% block content %}
+<style>
+.compare-result-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+.compare-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.compare-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.compare-section h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: #2c3e50;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+}
+
+.chart-box {
+    width: 100%;
+    height: 400px;
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.compare-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.trend-up {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.trend-down {
+    color: #dc3545;
+    font-weight: 600;
+}
+</style>
+
+<div class="compare-result-container">
+    <div class="compare-header">
+        <h2>📊 对比分析结果</h2>
+        <p>共对比 {{ results|length }} 个压测结果</p>
+    </div>
+
+    <!-- 关键指标对比表 -->
+    <div class="compare-section">
+        <h3>关键指标对比</h3>
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th>执行时间</th>
+                    <th>TPS</th>
+                    <th>平均响应时间</th>
+                    <th>P95</th>
+                    <th>成功率</th>
+                    <th>总请求数</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>{{ result.executed_at.strftime('%m-%d %H:%M') }}</td>
+                    <td>{{ "%.2f"|format(result.tps) }}</td>
+                    <td>{{ "%.2f"|format(result.avg_response_time * 1000) }} ms</td>
+                    <td>{{ "%.2f"|format(result.p95_response_time * 1000) }} ms</td>
+                    <td>{{ "%.1f"|format((result.success_requests / result.total_requests * 100) if result.total_requests > 0 else 0) }}%</td>
+                    <td>{{ result.total_requests }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TPS对比图 -->
+    <div class="compare-section">
+        <h3>TPS对比</h3>
+        <div id="tpsChart" class="chart-box"></div>
+    </div>
+
+    <!-- 响应时间对比图 -->
+    <div class="compare-section">
+        <h3>响应时间对比</h3>
+        <div id="responseTimeChart" class="chart-box"></div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="/load-tests/{{ load_test.id }}/results" class="btn" style="background:#6c757d">返回结果列表</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+// 准备数据
+const labels = [
+    {% for result in results %}
+    '{{ result.executed_at.strftime("%m-%d %H:%M") }}',
+    {% endfor %}
+];
+
+const tpsData = [
+    {% for result in results %}
+    {{ result.tps }},
+    {% endfor %}
+];
+
+const avgResponseTimes = [
+    {% for result in results %}
+    {{ result.avg_response_time * 1000 }},
+    {% endfor %}
+];
+
+const p95ResponseTimes = [
+    {% for result in results %}
+    {{ result.p95_response_time * 1000 }},
+    {% endfor %}
+];
+
+// TPS对比图
+const tpsChart = echarts.init(document.getElementById('tpsChart'));
+tpsChart.setOption({
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+        type: 'category',
+        data: labels
+    },
+    yAxis: {
+        type: 'value',
+        name: 'TPS (次/秒)'
+    },
+    series: [{
+        data: tpsData,
+        type: 'line',
+        smooth: true,
+        itemStyle: { color: '#667eea' },
+        areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(102, 126, 234, 0.3)' },
+                { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+            ])
+        }
+    }]
+});
+
+// 响应时间对比图
+const responseTimeChart = echarts.init(document.getElementById('responseTimeChart'));
+responseTimeChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['平均响应时间', 'P95响应时间'] },
+    xAxis: {
+        type: 'category',
+        data: labels
+    },
+    yAxis: {
+        type: 'value',
+        name: '响应时间 (ms)'
+    },
+    series: [
+        {
+            name: '平均响应时间',
+            data: avgResponseTimes,
+            type: 'line',
+            smooth: true,
+            itemStyle: { color: '#28a745' }
+        },
+        {
+            name: 'P95响应时间',
+            data: p95ResponseTimes,
+            type: 'line',
+            smooth: true,
+            itemStyle: { color: '#fd7e14' }
+        }
+    ]
+});
+
+// 响应式调整
+window.addEventListener('resize', () => {
+    tpsChart.resize();
+    responseTimeChart.resize();
+});
+</script>
+{% endblock %}

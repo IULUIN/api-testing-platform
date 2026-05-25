@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">📊 测试概览</h1>
+
+<div class="user-info" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-size: 1.1rem; color: #667eea; font-weight: 500;">👋 {{ current_user.username }}</span>
+    <span style="font-size: 0.9rem; color: #999; background: #f0f0f0; padding: 4px 12px; border-radius: 12px;">
+        {{ current_user.role }}
+    </span>
+</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>{{ total_cases }}</h3>
+        <p>测试用例总数</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ total_results }}</h3>
+        <p>执行次数</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.success_rate }}%</h3>
+        <p>成功率</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.avg_response_time }}s</h3>
+        <p>平均响应时间</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>最近测试结果</h2>
+    {% if recent_results %}
+    <table>
+        <thead>
+            <tr>
+                <th>用例名称</th>
+                <th>状态</th>
+                <th>响应时间</th>
+                <th>执行时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in recent_results %}
+            <tr>
+                <td>{{ result.test_case_name }}</td>
+                <td>
+                    <span class="status-{{ result.status }}">
+                        {% if result.status == 'success' %}✓ 成功
+                        {% elif result.status == 'failed' %}✗ 失败
+                        {% else %}⚠ 错误{% endif %}
+                    </span>
+                </td>
+                <td>{{ result.response_time }}s</td>
+                <td>{{ result.executed_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; color: #7f8c8d; padding: 2rem;">暂无测试结果</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>💡 新手指南</h2>
+    <p style="margin-bottom: 1rem; font-size: 1.1rem; color: #2c3e50;">
+        <strong>欢迎使用API自动化测试平台！</strong>这是一个帮助你测试API接口的工具。
+    </p>
+
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="margin-bottom: 1rem; color: #3498db;">🚀 快速开始（4步）</h3>
+        <ol style="line-height: 2.5; font-size: 1.05rem;">
+            <li><strong>第1步：</strong>点击顶部导航栏的"<span style="color: #3498db;">测试用例</span>"</li>
+            <li><strong>第2步：</strong>点击"<span style="color: #27ae60;">+ 添加用例</span>"按钮</li>
+            <li><strong>第3步：</strong>填写接口信息（网址、请求方式等），然后保存</li>
+            <li><strong>第4步：</strong>点击"<span style="color: #27ae60;">执行</span>"按钮运行测试，查看结果</li>
+        </ol>
+    </div>
+
+    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+        <p style="margin: 0; color: #856404;">
+            <strong>💡 提示：</strong>系统已经为你准备了3个示例用例，可以直接点击"测试用例"查看并执行！
+        </p>
+    </div>
+
+    <a href="/test-cases" class="btn btn-success" style="margin-top: 1.5rem; font-size: 1.1rem; padding: 0.8rem 2rem;">
+        👉 查看测试用例
+    </a>
+</div>
+
+<div class="card">
+    <h2>❓ 常见问题</h2>
+    <div style="line-height: 2;">
+        <p><strong>Q: 什么是接口测试？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: 就是测试网站或APP的后台接口是否正常工作，比如登录、查询数据等功能。</p>
+
+        <p style="margin-top: 1rem;"><strong>Q: GET和POST有什么区别？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: GET用于查询数据（比如查看用户信息），POST用于提交数据（比如创建新用户）。</p>
+
+        <p style="margin-top: 1rem;"><strong>Q: 测试失败了怎么办？</strong></p>
+        <p style="margin-left: 1.5rem; color: #555;">A: 检查网址是否正确、网络是否连接、接口是否需要登录等。</p>
+    </div>
+</div>
+{% endblock %}

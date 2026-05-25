@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}参数化测试教程 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="/examples" style="color: #3498db; text-decoration: none;">
+        ← 返回教程中心
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">📊 参数化测试教程</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">学习如何使用Excel/CSV实现数据驱动测试</p>
+</div>
+
+<!-- 可视化示例 -->
+{% if datasets_with_data %}
+<div style="background: #e8f5e9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #27ae60;">
+    <h2 style="color: #27ae60; margin: 0 0 0.5rem 0;">✨ 可视化演示</h2>
+    <p style="color: #2e7d32; margin: 0;">点击下面的示例，立即体验参数化测试！</p>
+</div>
+
+<div style="display: grid; gap: 2rem; margin-bottom: 2rem;">
+    {% for item in datasets_with_data %}
+    <div class="card" style="border-left: 4px solid #f093fb;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #333;">{{ item.dataset.name }}</h3>
+                <p style="color: #666; margin: 0.5rem 0;">{{ item.dataset.description }}</p>
+            </div>
+            <a href="/data-sets/{{ item.dataset.id }}/use" class="btn btn-success" style="font-size: 1.1rem; padding: 0.7rem 1.5rem; white-space: nowrap;">
+                ⚡ 立即使用
+            </a>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #555;">📊 数据预览（{{ item.dataset.data_count }}行）</h4>
+            <div style="overflow-x: auto;">
+                <table style="font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">行号</th>
+                            {% for header in item.headers %}
+                            <th>{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in item.data %}
+                        <tr>
+                            <td style="text-align: center; color: #999;">{{ loop.index }}</td>
+                            {% for header in item.headers %}
+                            <td>{{ row.get(header, '') }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #1976d2;">💡 如何使用这些变量</h4>
+            <p style="margin: 0.5rem 0; color: #555;">在测试用例中使用以下格式引用数据：</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                {% for header in item.headers %}
+                <code style="background: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.85rem;">{{"{{"}}{{ header }}{{"}}"}}</code>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- 什么是参数化测试 -->
+<div class="card">
+    <h2>❓ 什么是参数化测试</h2>
+    <p style="line-height: 1.8; color: #555;">
+        参数化测试是一种测试方法，允许你使用不同的数据集执行同一个测试用例。
+        这样可以大大提高测试效率，避免重复编写相似的测试用例。
+    </p>
+
+    <h3 style="color: #3498db; margin-top: 1.5rem;">传统方式 vs 参数化测试</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div style="background: #ffebee; padding: 1rem; border-radius: 8px;">
+            <h4 style="color: #e74c3c; margin: 0 0 0.5rem 0;">❌ 传统方式</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; line-height: 2; color: #666;">
+                <li>创建测试用例1：测试用户ID=1</li>
+                <li>创建测试用例2：测试用户ID=2</li>
+                <li>创建测试用例3：测试用户ID=3</li>
+                <li>...</li>
+                <li>需要创建100个测试用例</li>
+            </ul>
+        </div>
+        <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px;">
+            <h4 style="color: #27ae60; margin: 0 0 0.5rem 0;">✅ 参数化测试</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; line-height: 2; color: #666;">
+                <li>创建1个测试用例</li>
+                <li>准备Excel文件（100行数据）</li>
+                <li>上传数据集</li>
+                <li>批量执行</li>
+                <li>自动执行100次测试</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 使用步骤 -->
+<div class="card">
+    <h2>📝 使用步骤</h2>
+
+    <div style="line-height: 2;">
+        <h3 style="color: #3498db;">第1步：准备Excel文件</h3>
+        <p style="color: #666;">创建Excel文件，第一行为列名，后续行为数据</p>
+        <table style="margin: 1rem 0;">
+            <thead>
+                <tr>
+                    <th>user_id</th>
+                    <th>username</th>
+                    <th>email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>test1</td>
+                    <td>test1@example.com</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>test2</td>
+                    <td>test2@example.com</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>test3</td>
+                    <td>test3@example.com</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="color: #27ae60; margin-top: 1.5rem;">第2步：上传数据集</h3>
+        <p style="color: #666;">点击"数据集" → "上传数据集"，选择Excel文件上传</p>
+
+        <h3 style="color: #e74c3c; margin-top: 1.5rem;">第3步：创建测试用例（使用变量）</h3>
+        <p style="color: #666;">在测试用例中使用变量引用Excel中的列</p>
+        <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+            <p style="margin: 0.5rem 0;"><strong>URL:</strong> <code>https://api.example.com/users/{{"{{"}}user_id{{"}}"}}</code></p>
+            <p style="margin: 0.5rem 0;"><strong>Headers:</strong> <code>{{"{"}} "X-Username": "{{"{{"}}username{{"}}"}}" {{"}"}}</code></p>
+            <p style="margin: 0.5rem 0;"><strong>Body:</strong> <code>{{"{"}} "email": "{{"{{"}}email{{"}}"}}" {{"}"}}</code></p>
+        </div>
+
+        <h3 style="color: #f39c12; margin-top: 1.5rem;">第4步：批量执行</h3>
+        <p style="color: #666;">在数据集页面，点击"使用"，选择测试用例，点击"批量执行"</p>
+
+        <h3 style="color: #9b59b6; margin-top: 1.5rem;">第5步：查看结果</h3>
+        <p style="color: #666;">系统会显示批量测试结果，包括成功、失败、错误统计</p>
+    </div>
+</div>
+
+<!-- 变量格式 -->
+<div class="card">
+    <h2>🔤 变量格式</h2>
+    <p style="color: #666; line-height: 1.8;">支持两种变量格式：</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
+            <h4 style="color: #1976d2; margin: 0 0 0.5rem 0;">格式1：双花括号</h4>
+            <code style="background: white; padding: 0.5rem; display: block; border-radius: 4px;">{{"{{"}}变量名{{"}}"}}</code>
+            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">推荐使用</p>
+        </div>
+        <div style="background: #f3e5f5; padding: 1rem; border-radius: 8px;">
+            <h4 style="color: #7b1fa2; margin: 0 0 0.5rem 0;">格式2：美元符号</h4>
+            <code style="background: white; padding: 0.5rem; display: block; border-radius: 4px;">${"{"}变量名{"}"}</code>
+            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">也支持</p>
+        </div>
+    </div>
+</div>
+
+<!-- 注意事项 -->
+<div class="card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+    <h2 style="color: #856404;">⚠️ 注意事项</h2>
+    <ul style="line-height: 2; color: #856404;">
+        <li>Excel第一行必须是列名（变量名）</li>
+        <li>列名建议使用英文和下划线，避免特殊字符</li>
+        <li>文件大小不能超过5MB</li>
+        <li>支持.xlsx、.xls、.csv格式</li>
+        <li>空行会被自动跳过</li>
+        <li>错误数据不会影响其他数据的执行</li>
+    </ul>
+</div>
+
+<!-- 快速开始 -->
+<div style="text-align: center; margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #e0f7fa 0%, #e1bee7 100%); border-radius: 8px;">
+    <h2 style="color: #333;">🎉 准备好了吗？</h2>
+    <p style="font-size: 1.1rem; margin: 1rem 0; color: #555;">
+        {% if datasets_with_data %}
+        点击上面的示例立即体验，或者上传你自己的数据集！
+        {% else %}
+        现在就去上传你的第一个数据集吧！
+        {% endif %}
+    </p>
+    <a href="/data-sets/upload" class="btn btn-success" style="font-size: 1.2rem; padding: 1rem 2rem;">
+        🚀 上传数据集
+    </a>
+</div>
+
+{% endblock %}

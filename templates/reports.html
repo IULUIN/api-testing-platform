@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}测试报告 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #4caf50;">
+    <p style="margin: 0; color: #2e7d32;">
+        <strong>📈 测试报告</strong> - 查看所有测试的历史记录和统计数据
+    </p>
+</div>
+
+<h1 style="margin-bottom: 2rem;">📊 测试统计</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>{{ stats.total }}</h3>
+        <p>总执行次数</p>
+        <small style="color: #7f8c8d;">所有测试的总次数</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: #27ae60;">{{ stats.success }}</h3>
+        <p>✅ 成功</p>
+        <small style="color: #7f8c8d;">测试通过的次数</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: #e74c3c;">{{ stats.failed }}</h3>
+        <p>❌ 失败</p>
+        <small style="color: #7f8c8d;">测试未通过的次数</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: #f39c12;">{{ stats.error }}</h3>
+        <p>⚠️ 错误</p>
+        <small style="color: #7f8c8d;">执行出错的次数</small>
+    </div>
+    <div class="stat-card">
+        <h3 style="color: {% if stats.success_rate >= 80 %}#27ae60{% elif stats.success_rate >= 50 %}#f39c12{% else %}#e74c3c{% endif %};">
+            {{ stats.success_rate }}%
+        </h3>
+        <p>成功率</p>
+        <small style="color: #7f8c8d;">成功次数/总次数</small>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.avg_response_time }}秒</h3>
+        <p>⏱️ 平均响应时间</p>
+        <small style="color: #7f8c8d;">接口平均响应速度</small>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📋 测试历史记录</h2>
+    {% if results %}
+    <div style="margin-bottom: 1rem; padding: 0.8rem; background: #f8f9fa; border-radius: 4px;">
+        <p style="margin: 0; color: #555;">
+            <strong>说明：</strong>
+            <span style="color: #27ae60;">✅ 成功</span> = 测试通过 |
+            <span style="color: #e74c3c;">❌ 失败</span> = 状态码不匹配 |
+            <span style="color: #f39c12;">⚠️ 错误</span> = 网络或其他错误
+        </p>
+    </div>
+    <table style="table-layout: fixed; width: 100%;">
+        <colgroup>
+            <col style="width: 50px;">
+            <col style="width: auto;">
+            <col style="width: 95px;">
+            <col style="width: 80px;">
+            <col style="width: 100px;">
+            <col style="width: 110px;">
+            <col style="width: 85px;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th style="white-space: nowrap;">#</th>
+                <th>用例名称</th>
+                <th style="white-space: nowrap;">测试结果</th>
+                <th style="white-space: nowrap;">状态码</th>
+                <th style="white-space: nowrap;">响应时间</th>
+                <th style="white-space: nowrap;">执行时间</th>
+                <th style="white-space: nowrap;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td style="white-space: nowrap; color: #999; font-size: 13px;">{{ loop.index + (page - 1) * per_page }}</td>
+                <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ result.test_case_name }}">{{ result.test_case_name }}</td>
+                <td style="white-space: nowrap;">
+                    <span class="status-{{ result.status }}" style="font-size: 0.95rem;">
+                        {% if result.status == 'success' %}✅ 成功
+                        {% elif result.status == 'failed' %}❌ 失败
+                        {% else %}⚠️ 错误{% endif %}
+                    </span>
+                </td>
+                <td style="white-space: nowrap; text-align: center;">
+                    <span style="background: {% if result.status == 'success' %}#27ae60{% else %}#e74c3c{% endif %}; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 13px;">
+                        {{ result.actual_status }}
+                    </span>
+                </td>
+                <td style="white-space: nowrap; font-size: 13px;">
+                    {% if result.response_time %}
+                        {% if result.response_time < 0.01 %}
+                            {{ "%.4f"|format(result.response_time) }}s
+                        {% elif result.response_time < 1 %}
+                            {{ "%.3f"|format(result.response_time) }}s
+                        {% elif result.response_time < 10 %}
+                            {{ "%.2f"|format(result.response_time) }}s
+                        {% else %}
+                            {{ "%.1f"|format(result.response_time) }}s
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td style="white-space: nowrap; font-size: 12px; color: #666;">
+                    {% if result.executed_at %}
+                        {{ result.executed_at.strftime('%m-%d %H:%M') if result.executed_at.strftime else result.executed_at }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td style="white-space: nowrap;">
+                    <button onclick="showDetail({{ result.id }})" class="btn btn-small" title="查看详细信息" style="padding: 0.3rem 0.6rem; font-size: 13px;">🔍 详情</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 分页组件 -->
+    {% if total_pages > 1 %}
+    <div style="margin-top: 2rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 4px;">
+        <div style="color: #666;">
+            共 <strong>{{ total }}</strong> 条记录，第 <strong>{{ page }}</strong> / <strong>{{ total_pages }}</strong> 页
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            {% if page > 1 %}
+            <a href="?page=1" class="btn btn-small">首页</a>
+            <a href="?page={{ page - 1 }}" class="btn btn-small">上一页</a>
+            {% endif %}
+
+            {% for p in range([1, page - 2]|max, [total_pages, page + 2]|min + 1) %}
+                {% if p == page %}
+                <span class="btn btn-small" style="background: #3498db; color: white;">{{ p }}</span>
+                {% else %}
+                <a href="?page={{ p }}" class="btn btn-small">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}" class="btn btn-small">下一页</a>
+            <a href="?page={{ total_pages }}" class="btn btn-small">末页</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="text-align: center; padding: 3rem;">
+        <p style="font-size: 1.2rem; color: #7f8c8d; margin-bottom: 1rem;">
+            😊 还没有测试记录
+        </p>
+        <p style="color: #95a5a6; margin-bottom: 1.5rem;">
+            去"测试用例"页面执行测试，就会在这里看到记录了
+        </p>
+        <a href="/test-cases" class="btn btn-success" style="font-size: 1.1rem;">
+            👉 去执行测试
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div id="detail-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; max-width: 900px; margin: 50px auto; padding: 2rem; border-radius: 8px; max-height: 80vh; overflow-y: auto;">
+        <h2>🔍 测试详细信息</h2>
+        <div id="detail-content"></div>
+        <button onclick="closeDetailModal()" class="btn" style="margin-top: 1rem;">关闭</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const resultsData = {{ results_json | tojson | safe }};
+
+function showDetail(resultId) {
+    const result = resultsData.find(r => r.id === resultId);
+    if (!result) {
+        alert('❌ 未找到测试结果');
+        return;
+    }
+
+    const statusClass = result.status === 'success' ? 'status-success' :
+                       result.status === 'failed' ? 'status-failed' : 'status-error';
+
+    const statusText = result.status === 'success' ? '✅ 测试成功' :
+                      result.status === 'failed' ? '❌ 测试失败' : '⚠️ 测试错误';
+
+    const statusBg = result.status === 'success' ? '#d4edda' : '#f8d7da';
+
+    const html = `
+        <div style="margin-top: 1rem;">
+            <div style="padding: 1rem; background: ${statusBg}; border-radius: 4px; margin-bottom: 1.5rem;">
+                <p style="margin: 0; font-size: 1.2rem;"><strong>${statusText}</strong></p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <p style="margin: 0.5rem 0;"><strong>📝 用例编号:</strong> #${result.test_case_id}</p>
+                <p style="margin: 0.5rem 0;"><strong>📝 用例名称:</strong> ${result.test_case_name}</p>
+                <p style="margin: 0.5rem 0;"><strong>📊 测试状态:</strong> <span class="${statusClass}">${statusText}</span></p>
+                <p style="margin: 0.5rem 0;"><strong>🔢 实际状态码:</strong> ${result.actual_status}</p>
+                <p style="margin: 0.5rem 0;"><strong>⏱️ 响应时间:</strong> ${result.response_time}秒</p>
+                <p style="margin: 0.5rem 0;"><strong>🕐 执行时间:</strong> ${result.executed_at}</p>
+            </div>
+
+            ${result.error_message ? `
+                <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #e74c3c;">
+                    <p style="margin: 0;"><strong>❌ 错误信息:</strong></p>
+                    <p style="margin: 0.5rem 0; color: #721c24;">${result.error_message}</p>
+                </div>
+            ` : ''}
+
+            <div style="margin-top: 1rem;">
+                <p style="margin-bottom: 0.5rem;"><strong>📄 响应内容:</strong></p>
+                <pre style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto; max-height: 400px; border: 1px solid #ddd;">${result.response_body || '无响应内容'}</pre>
+            </div>
+
+            <div style="margin-top: 1rem; padding: 0.8rem; background: #e3f2fd; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.9rem; color: #1565c0;">
+                    💡 <strong>提示：</strong>如果测试失败，检查接口地址、请求参数、网络连接等是否正确
+                </p>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('detail-content').innerHTML = html;
+    document.getElementById('detail-modal').style.display = 'block';
+}
+
+function closeDetailModal() {
+    document.getElementById('detail-modal').style.display = 'none';
+}
+</script>
+{% endblock %}

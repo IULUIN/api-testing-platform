@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}数据集管理 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">📊 数据集管理</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">上传Excel/CSV文件，实现参数化测试</p>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>我的数据集</h2>
+    <a href="/data-sets/upload" class="btn btn-success" style="font-size: 1.1rem;">
+        ➕ 上传数据集
+    </a>
+</div>
+
+{% if data_sets %}
+<div style="display: grid; gap: 1.5rem;">
+    {% for ds in data_sets %}
+    <div class="card" style="border-left: 4px solid #f093fb;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #333;">{{ ds.name }}</h3>
+                <p style="color: #666; margin: 0.5rem 0;">{{ ds.description or '无描述' }}</p>
+
+                <div style="display: flex; gap: 2rem; margin-top: 1rem; color: #888; font-size: 0.9rem;">
+                    <span>📄 文件: {{ ds.file_name }}</span>
+                    <span>📊 数据行数: {{ ds.data_count }}</span>
+                    <span>🕐 创建时间: {{ ds.created_at }}</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/data-sets/{{ ds.id }}/view" class="btn" style="padding: 0.6rem 1.2rem; font-size: 14px;">
+                    👁️ 查看
+                </a>
+                <a href="/data-sets/{{ ds.id }}/use" class="btn btn-success" style="padding: 0.6rem 1.2rem; font-size: 14px;">
+                    ▶ 使用
+                </a>
+                <form action="/data-sets/{{ ds.id }}/delete" method="POST" style="display: inline;"
+                      onsubmit="return confirm('确定要删除这个数据集吗？');">
+                    <button type="submit" class="btn btn-danger" style="padding: 0.6rem 1.2rem; font-size: 14px;">
+                        🗑 删除
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 分页组件 -->
+{% if total_pages > 1 %}
+<div style="margin-top: 2rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 4px;">
+    <div style="color: #666;">
+        共 <strong>{{ total }}</strong> 条记录，第 <strong>{{ page }}</strong> / <strong>{{ total_pages }}</strong> 页
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        {% if page > 1 %}
+        <a href="?page=1" class="btn btn-small">首页</a>
+        <a href="?page={{ page - 1 }}" class="btn btn-small">上一页</a>
+        {% endif %}
+
+        {% for p in range([1, page - 2]|max, [total_pages, page + 2]|min + 1) %}
+            {% if p == page %}
+            <span class="btn btn-small" style="background: #3498db; color: white;">{{ p }}</span>
+            {% else %}
+            <a href="?page={{ p }}" class="btn btn-small">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}" class="btn btn-small">下一页</a>
+        <a href="?page={{ total_pages }}" class="btn btn-small">末页</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
+    <h3 style="color: #666; margin-bottom: 1rem;">还没有数据集</h3>
+    <p style="color: #999; margin-bottom: 2rem;">上传Excel或CSV文件，开始参数化测试</p>
+    <a href="/data-sets/upload" class="btn btn-success" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+        ➕ 上传第一个数据集
+    </a>
+</div>
+{% endif %}
+
+<!-- 使用说明 -->
+<div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, #e0f7fa 0%, #e1bee7 100%); border: none;">
+    <h2 style="color: #333;">💡 使用说明</h2>
+    <div style="line-height: 2; color: #555;">
+        <p><strong>第1步：</strong>准备Excel或CSV文件，第一行为列名，后续行为数据</p>
+        <p><strong>第2步：</strong>点击"上传数据集"，选择文件并上传</p>
+        <p><strong>第3步：</strong>在测试用例中使用变量，如 <code>{{"{{"}}user_id{{"}}"}}</code></p>
+        <p><strong>第4步：</strong>选择数据集，批量执行测试</p>
+    </div>
+</div>
+
+<!-- 示例 -->
+<div class="card" style="margin-top: 1rem;">
+    <h2>📝 Excel示例</h2>
+    <table style="margin-top: 1rem;">
+        <thead>
+            <tr>
+                <th>user_id</th>
+                <th>username</th>
+                <th>email</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>test1</td>
+                <td>test1@example.com</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>test2</td>
+                <td>test2@example.com</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>test3</td>
+                <td>test3@example.com</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p style="margin-top: 1rem; color: #666;">
+        在测试用例的URL中使用: <code>https://api.example.com/users/{{"{{"}}user_id{{"}}"}}</code>
+    </p>
+</div>
+
+{% endblock %}

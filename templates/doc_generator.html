@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}测试用例文档生成器 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<style>
+/* 单选框样式优化 */
+input[type="radio"] + span {
+    transition: all 0.2s;
+}
+
+input[type="radio"]:checked + span {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+label:has(input[type="radio"]) {
+    transition: all 0.2s;
+}
+
+label:has(input[type="radio"]:checked) {
+    border-color: #27ae60 !important;
+    background: #e8f5e9;
+}
+
+label:has(input[type="radio"]):hover {
+    border-color: #27ae60;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 复选框样式优化 */
+label:has(input[type="checkbox"]) {
+    transition: all 0.2s;
+}
+
+label:has(input[type="checkbox"]:checked) {
+    background: #e3f2fd !important;
+    border: 2px solid #2196f3;
+}
+
+label:has(input[type="checkbox"]):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="/test-cases" class="btn" style="padding: 0.7rem 1.5rem; font-size: 15px; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        ← 返回测试用例列表
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">📝 测试用例文档生成器</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">输入功能点，自动生成测试用例文档</p>
+</div>
+
+<form id="doc-generator-form">
+    <!-- 基本信息 -->
+    <div class="card">
+        <h2>📋 基本信息</h2>
+
+        <div class="form-group">
+            <label for="scenario"><strong>测试场景/模块名称</strong> <span style="color: red;">*</span></label>
+            <input type="text" id="scenario" name="scenario" required placeholder="例如：用户管理模块">
+            <small style="color: #7f8c8d;">描述要测试的功能模块或场景</small>
+        </div>
+
+        <div class="form-group">
+            <label for="project_name"><strong>项目名称</strong> <span style="color: #999;">选填</span></label>
+            <input type="text" id="project_name" name="project_name" placeholder="例如：电商管理系统">
+        </div>
+
+        <div class="form-group">
+            <label for="tester"><strong>测试人员</strong> <span style="color: #999;">选填</span></label>
+            <input type="text" id="tester" name="tester" placeholder="例如：张三">
+        </div>
+    </div>
+
+    <!-- 功能点配置 -->
+    <div class="card">
+        <h2>🎯 功能点配置</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">添加一级功能点和二级功能点，系统会自动生成测试用例</p>
+
+        <div id="features-container">
+            <!-- 功能点会动态添加到这里 -->
+        </div>
+
+        <button type="button" onclick="addFeature()" class="btn" style="margin-top: 1rem;">
+            ➕ 添加一级功能点
+        </button>
+    </div>
+
+    <!-- 生成选项 -->
+    <div class="card">
+        <h2>⚙️ 生成选项</h2>
+
+        <div class="form-group">
+            <label><strong>文档格式</strong></label>
+            <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem 1rem; border: 2px solid #ddd; border-radius: 6px; transition: all 0.2s;">
+                    <input type="radio" name="format" value="excel" checked style="margin-right: 0.5rem;">
+                    <span>📊 Excel (.xlsx) - 推荐</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem 1rem; border: 2px solid #ddd; border-radius: 6px; transition: all 0.2s;">
+                    <input type="radio" name="format" value="markdown" style="margin-right: 0.5rem;">
+                    <span>📝 Markdown (.md)</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="save_path"><strong>保存路径</strong> <span style="color: #999; font-weight: normal;">（选填）</span></label>
+            <input type="text" id="save_path" name="save_path" placeholder="留空则保存到默认路径" style="width: 100%;">
+            <small style="color: #7f8c8d; display: block; margin-top: 0.3rem;">💡 例如：C:\Users\用户名\Desktop\测试用例.xlsx</small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.8rem; background: #f8f9fa; border-radius: 6px; transition: all 0.2s;">
+                <input type="checkbox" id="include_steps" name="include_steps" checked style="margin-right: 0.8rem; width: 18px; height: 18px;">
+                <span><strong>包含详细测试步骤</strong></span>
+            </label>
+
+            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.8rem; background: #f8f9fa; border-radius: 6px; transition: all 0.2s;">
+                <input type="checkbox" id="include_priority" name="include_priority" checked style="margin-right: 0.8rem; width: 18px; height: 18px;">
+                <span><strong>包含优先级</strong></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 提交按钮 -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; display: flex; justify-content: center; gap: 1rem;">
+        <button type="button" onclick="generateDocument()" class="btn btn-success" style="font-size: 1.1rem; padding: 0.8rem 2.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            ✨ 生成测试用例文档
+        </button>
+        <button type="button" onclick="previewCases()" class="btn" style="font-size: 1.1rem; padding: 0.8rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            👁️ 预览用例
+        </button>
+    </div>
+</form>
+
+<!-- 预览模态框 -->
+<div id="preview-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; max-width: 1200px; margin: 50px auto; padding: 2rem; border-radius: 8px; max-height: 80vh; overflow-y: auto;">
+        <h2>👀 测试用例预览</h2>
+        <div id="preview-content"></div>
+        <button onclick="closePreview()" class="btn" style="margin-top: 1rem;">关闭</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let featureCount = 0;
+
+// 页面加载时添加第一个功能点
+document.addEventListener('DOMContentLoaded', function() {
+    addFeature();
+});
+
+function addFeature() {
+    featureCount++;
+    const container = document.getElementById('features-container');
+
+    const featureDiv = document.createElement('div');
+    featureDiv.className = 'feature-item';
+    featureDiv.id = `feature-${featureCount}`;
+    featureDiv.style.cssText = 'border: 2px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; background: #f8f9fa;';
+
+    featureDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; color: #3498db;">一级功能点 #${featureCount}</h3>
+            <button type="button" onclick="removeFeature(${featureCount})" class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                🗑 删除
+            </button>
+        </div>
+
+        <div class="form-group">
+            <label><strong>一级功能点名称</strong> <span style="color: red;">*</span></label>
+            <input type="text" name="feature_${featureCount}_name" required placeholder="例如：用户登录">
+        </div>
+
+        <div class="form-group">
+            <label><strong>二级功能点</strong> <span style="color: #999;">每行一个，按回车添加</span></label>
+            <textarea name="feature_${featureCount}_sub" rows="4" placeholder="例如：&#10;正常登录&#10;密码错误&#10;用户名不存在&#10;验证码错误"></textarea>
+            <small style="color: #7f8c8d;">每行一个二级功能点，系统会为每个二级功能点生成测试用例</small>
+        </div>
+
+        <div class="form-group">
+            <label><strong>每个二级功能点生成用例数</strong></label>
+            <select name="feature_${featureCount}_count">
+                <option value="1">1个用例（快速）</option>
+                <option value="2" selected>2个用例（正常+异常）</option>
+                <option value="3">3个用例（详细）</option>
+                <option value="5">5个用例（完整）</option>
+            </select>
+        </div>
+    `;
+
+    container.appendChild(featureDiv);
+}
+
+function removeFeature(id) {
+    const element = document.getElementById(`feature-${id}`);
+    if (element) {
+        element.remove();
+    }
+}
+
+function collectFormData() {
+    const data = {
+        scenario: document.getElementById('scenario').value,
+        project_name: document.getElementById('project_name').value,
+        tester: document.getElementById('tester').value,
+        format: document.querySelector('input[name="format"]:checked').value,
+        save_path: document.getElementById('save_path').value,
+        include_steps: document.getElementById('include_steps').checked,
+        include_priority: document.getElementById('include_priority').checked,
+        features: []
+    };
+
+    // 收集所有功能点
+    for (let i = 1; i <= featureCount; i++) {
+        const nameInput = document.querySelector(`input[name="feature_${i}_name"]`);
+        if (!nameInput) continue;
+
+        const name = nameInput.value;
+        const subText = document.querySelector(`textarea[name="feature_${i}_sub"]`).value;
+        const count = document.querySelector(`select[name="feature_${i}_count"]`).value;
+
+        if (name) {
+            const subFeatures = subText.split('\n').filter(s => s.trim());
+            data.features.push({
+                name: name,
+                sub_features: subFeatures,
+                case_count: parseInt(count)
+            });
+        }
+    }
+
+    return data;
+}
+
+function previewCases() {
+    const data = collectFormData();
+
+    if (!data.scenario) {
+        alert('请填写测试场景');
+        return;
+    }
+
+    if (data.features.length === 0) {
+        alert('请至少添加一个功能点');
+        return;
+    }
+
+    // 生成预览
+    let html = '<div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">';
+    html += `<h3>测试场景：${data.scenario}</h3>`;
+    if (data.project_name) html += `<p><strong>项目：</strong>${data.project_name}</p>`;
+    if (data.tester) html += `<p><strong>测试人员：</strong>${data.tester}</p>`;
+    html += '</div>';
+
+    html += '<table style="width: 100%; font-size: 0.9rem;"><thead><tr>';
+    html += '<th style="width: 80px;">编号</th>';
+    html += '<th>用例标题</th>';
+    html += '<th>功能点</th>';
+    if (data.include_priority) html += '<th style="width: 80px;">优先级</th>';
+    html += '<th style="width: 100px;">用例类型</th>';
+    html += '</tr></thead><tbody>';
+
+    let caseNum = 1;
+    data.features.forEach((feature, fIdx) => {
+        if (feature.sub_features.length === 0) {
+            // 没有二级功能点，直接生成
+            for (let i = 0; i < feature.case_count; i++) {
+                html += '<tr>';
+                html += `<td style="text-align: center;">TC${String(caseNum).padStart(3, '0')}</td>`;
+                html += `<td>${feature.name} - 测试用例${i + 1}</td>`;
+                html += `<td>${feature.name}</td>`;
+                if (data.include_priority) html += `<td style="text-align: center;">${i === 0 ? 'P0' : 'P1'}</td>`;
+                html += `<td style="text-align: center;">${i === 0 ? '功能测试' : '异常测试'}</td>`;
+                html += '</tr>';
+                caseNum++;
+            }
+        } else {
+            // 有二级功能点
+            feature.sub_features.forEach((subFeature, sIdx) => {
+                for (let i = 0; i < feature.case_count; i++) {
+                    html += '<tr>';
+                    html += `<td style="text-align: center;">TC${String(caseNum).padStart(3, '0')}</td>`;
+                    html += `<td>${feature.name} - ${subFeature} - 用例${i + 1}</td>`;
+                    html += `<td>${feature.name} > ${subFeature}</td>`;
+                    if (data.include_priority) html += `<td style="text-align: center;">${i === 0 ? 'P0' : 'P1'}</td>`;
+                    html += `<td style="text-align: center;">${i === 0 ? '功能测试' : '异常测试'}</td>`;
+                    html += '</tr>';
+                    caseNum++;
+                }
+            });
+        }
+    });
+
+    html += '</tbody></table>';
+    html += `<p style="margin-top: 1rem; color: #666;"><strong>共生成 ${caseNum - 1} 个测试用例</strong></p>`;
+
+    document.getElementById('preview-content').innerHTML = html;
+    document.getElementById('preview-modal').style.display = 'block';
+}
+
+function closePreview() {
+    document.getElementById('preview-modal').style.display = 'none';
+}
+
+function generateDocument() {
+    const data = collectFormData();
+
+    if (!data.scenario) {
+        alert('请填写测试场景');
+        return;
+    }
+
+    if (data.features.length === 0) {
+        alert('请至少添加一个功能点');
+        return;
+    }
+
+    // 显示加载提示
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ 生成中...';
+    btn.disabled = true;
+
+    // 发送到服务器生成文档
+    fetch('/test-cases/generate-doc', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (result.success) {
+            alert(`✅ 文档生成成功！\n\n文件路径：${result.file_path}\n共生成 ${result.case_count} 个测试用例`);
+
+            // 提供下载链接
+            if (result.download_url) {
+                window.open(result.download_url, '_blank');
+            }
+        } else {
+            alert('❌ 生成失败：' + (result.error || '未知错误'));
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert('❌ 请求失败：' + error);
+    });
+}
+</script>
+{% endblock %}

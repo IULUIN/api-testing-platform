@@ -1,0 +1,27 @@
+<!-- 通用分页组件 -->
+{% if total_pages > 1 %}
+<div style="margin-top: 2rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 4px;">
+    <div style="color: #666;">
+        共 <strong>{{ total }}</strong> 条记录，第 <strong>{{ page }}</strong> / <strong>{{ total_pages }}</strong> 页
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        {% if page > 1 %}
+        <a href="?page=1" class="btn btn-small">首页</a>
+        <a href="?page={{ page - 1 }}" class="btn btn-small">上一页</a>
+        {% endif %}
+
+        {% for p in range([1, page - 2]|max, [total_pages, page + 2]|min + 1) %}
+            {% if p == page %}
+            <span class="btn btn-small" style="background: #3498db; color: white;">{{ p }}</span>
+            {% else %}
+            <a href="?page={{ p }}" class="btn btn-small">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}" class="btn btn-small">下一页</a>
+        <a href="?page={{ total_pages }}" class="btn btn-small">末页</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

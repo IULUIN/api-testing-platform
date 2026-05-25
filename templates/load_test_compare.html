@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}压测对比分析{% endblock %}
+
+{% block content %}
+<style>
+.compare-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+.compare-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.compare-header h2 {
+    margin: 0 0 8px;
+    font-size: 26px;
+}
+
+.selector-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.selector-section h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: #2c3e50;
+}
+
+.result-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+}
+
+.result-option {
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.result-option:hover {
+    border-color: #667eea;
+    background: #f8f9fa;
+}
+
+.result-option.selected {
+    border-color: #667eea;
+    background: #e7f0ff;
+}
+
+.result-option input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.compare-btn-container {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.comparison-result {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.comparison-result h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: #2c3e50;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+}
+
+.chart-box {
+    width: 100%;
+    height: 400px;
+}
+</style>
+
+<div class="compare-container">
+    <div class="compare-header">
+        <h2>📊 压测对比分析</h2>
+        <p>选择多个压测结果进行对比，分析性能变化趋势</p>
+    </div>
+
+    <div class="selector-section">
+        <h3>选择要对比的结果（至少选择2个）</h3>
+        <form method="post" action="/load-tests/{{ load_test.id }}/compare" id="compareForm">
+            <div class="result-selector">
+                {% for result in results %}
+                <label class="result-option">
+                    <input type="checkbox" name="result_ids" value="{{ result.id }}" onchange="updateSelection()">
+                    <div>
+                        <strong>{{ result.executed_at.strftime('%Y-%m-%d %H:%M:%S') }}</strong><br>
+                        <small>TPS: {{ "%.2f"|format(result.tps) }} | 成功率: {{ "%.1f"|format((result.success_requests / result.total_requests * 100) if result.total_requests > 0 else 0) }}%</small>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+
+            <div class="compare-btn-container">
+                <button type="submit" class="btn btn-success" id="compareBtn" disabled>开始对比</button>
+                <a href="/load-tests/{{ load_test.id }}/results" class="btn" style="background:#6c757d">返回</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('input[name="result_ids"]:checked');
+    const compareBtn = document.getElementById('compareBtn');
+    const labels = document.querySelectorAll('.result-option');
+
+    // 更新选中样式
+    labels.forEach(label => {
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        if (checkbox.checked) {
+            label.classList.add('selected');
+        } else {
+            label.classList.remove('selected');
+        }
+    });
+
+    // 至少选择2个才能对比
+    compareBtn.disabled = checkboxes.length < 2;
+}
+</script>
+{% endblock %}

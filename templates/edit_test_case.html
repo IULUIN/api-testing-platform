@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}编辑测试用例 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">✏️ 编辑测试用例</h1>
+
+<div class="card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">用例名称 *</label>
+            <input type="text" id="name" name="name" required
+                   value="{{ case.name }}">
+        </div>
+
+        <div class="form-group">
+            <label for="url">请求URL *</label>
+            <input type="url" id="url" name="url" required
+                   value="{{ case.url }}">
+        </div>
+
+        <div class="form-group">
+            <label for="method">请求方法 *</label>
+            <select id="method" name="method" required>
+                <option value="GET" {% if case.method == 'GET' %}selected{% endif %}>GET</option>
+                <option value="POST" {% if case.method == 'POST' %}selected{% endif %}>POST</option>
+                <option value="PUT" {% if case.method == 'PUT' %}selected{% endif %}>PUT</option>
+                <option value="DELETE" {% if case.method == 'DELETE' %}selected{% endif %}>DELETE</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="headers">请求头 (JSON格式)</label>
+            <textarea id="headers" name="headers">{{ case.headers }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="body">请求体 (JSON格式)</label>
+            <textarea id="body" name="body">{{ case.body }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="expected_status">期望状态码 *</label>
+            <input type="number" id="expected_status" name="expected_status"
+                   value="{{ case.expected_status }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">描述</label>
+            <textarea id="description" name="description">{{ case.description }}</textarea>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-success">保存</button>
+            <a href="/test-cases" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

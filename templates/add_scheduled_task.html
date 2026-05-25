@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block title %}添加定时任务{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>➕ 添加定时任务</h1>
+        <a href="{{ url_for('main.scheduled_tasks') }}" class="btn btn-secondary">← 返回</a>
+    </div>
+
+    <div class="form-container">
+        <form id="taskForm">
+            <div class="form-group">
+                <label for="test_case_id">选择测试用例 *</label>
+                <select id="test_case_id" name="test_case_id" class="form-control" required>
+                    <option value="">-- 请选择测试用例 --</option>
+                    {% for case in test_cases %}
+                    <option value="{{ case.id }}">{{ case.name }}</option>
+                    {% endfor %}
+                </select>
+                <small class="form-text">选择要定时执行的测试用例</small>
+            </div>
+
+            <div class="form-group">
+                <label for="cron_mode">执行频率 *</label>
+                <select id="cron_mode" class="form-control" onchange="handleCronModeChange()">
+                    <option value="preset">选择常用频率（推荐）</option>
+                    <option value="custom">自定义Cron表达式</option>
+                </select>
+                <small class="form-text">选择预设频率更简单，也可以自定义Cron表达式</small>
+            </div>
+
+            <!-- 预设频率选择 -->
+            <div id="preset_mode" class="form-group">
+                <label for="cron_preset">选择执行频率 *</label>
+                <select id="cron_preset" name="cron_preset" class="form-control" onchange="updateCronFromPreset()">
+                    <option value="">-- 请选择执行频率 --</option>
+                    <optgroup label="⏱️ 分钟级">
+                        <option value="*/5 * * * *">每5分钟执行一次</option>
+                        <option value="*/10 * * * *">每10分钟执行一次</option>
+                        <option value="*/15 * * * *">每15分钟执行一次</option>
+                        <option value="*/30 * * * *">每30分钟执行一次</option>
+                    </optgroup>
+                    <optgroup label="⏰ 小时级">
+                        <option value="0 * * * *">每小时执行一次</option>
+                        <option value="0 */2 * * *">每2小时执行一次</option>
+                        <option value="0 */3 * * *">每3小时执行一次</option>
+                        <option value="0 */6 * * *">每6小时执行一次</option>
+                        <option value="0 */12 * * *">每12小时执行一次</option>
+                    </optgroup>
+                    <optgroup label="📅 每天">
+                        <option value="0 0 * * *">每天凌晨0:00</option>
+                        <option value="0 2 * * *">每天凌晨2:00</option>
+                        <option value="0 6 * * *">每天早上6:00</option>
+                        <option value="0 9 * * *">每天上午9:00</option>
+                        <option value="0 12 * * *">每天中午12:00</option>
+                        <option value="0 18 * * *">每天下午18:00</option>
+                        <option value="0 22 * * *">每天晚上22:00</option>
+                    </optgroup>
+                    <optgroup label="📆 工作日">
+                        <option value="0 9 * * 1-5">工作日上午9:00</option>
+                        <option value="0 18 * * 1-5">工作日下午18:00</option>
+                        <option value="0 12 * * 1-5">工作日中午12:00</option>
+                    </optgroup>
+                    <optgroup label="📌 每周">
+                        <option value="0 9 * * 1">每周一上午9:00</option>
+                        <option value="0 9 * * 5">每周五上午9:00</option>
+                        <option value="0 0 * * 0">每周日凌晨0:00</option>
+                        <option value="0 0 * * 6">每周六凌晨0:00</option>
+                    </optgroup>
+                    <optgroup label="📊 每月">
+                        <option value="0 0 1 * *">每月1号凌晨0:00</option>
+                        <option value="0 9 1 * *">每月1号上午9:00</option>
+                        <option value="0 0 15 * *">每月15号凌晨0:00</option>
+                        <option value="0 0 L * *">每月最后一天凌晨0:00</option>
+                    </optgroup>
+                </select>
+                <small class="form-text">从常用频率中选择，系统会自动生成Cron表达式</small>
+            </div>
+
+            <!-- 自定义Cron表达式 -->
+            <div id="custom_mode" class="form-group" style="display: none;">
+                <label for="cron_expression">Cron表达式 *</label>
+                <input type="text" id="cron_expression" name="cron_expression"
+                       class="form-control" placeholder="例如: 0 9 * * *">
+                <small class="form-text">
+                    格式: 分 时 日 月 周<br>
+                    示例: <code>0 9 * * *</code> = 每天9:00执行
+                </small>
+
+                <div class="cron-examples">
+                    <h3>💡 常用示例（点击快速填入）</h3>
+                    <div class="example-grid">
+                        <div class="example-item" onclick="setCron('*/5 * * * *')">
+                            <code>*/5 * * * *</code>
+                            <span>每5分钟</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 * * * *')">
+                            <code>0 * * * *</code>
+                            <span>每小时</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 9 * * *')">
+                            <code>0 9 * * *</code>
+                            <span>每天9:00</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 9 * * 1-5')">
+                            <code>0 9 * * 1-5</code>
+                            <span>工作日9:00</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 0 * * 0')">
+                            <code>0 0 * * 0</code>
+                            <span>每周日0:00</span>
+                        </div>
+                        <div class="example-item" onclick="setCron('0 0 1 * *')">
+                            <code>0 0 1 * *</code>
+                            <span>每月1号0:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 显示当前Cron表达式 -->
+            <div class="form-group" style="background: #e3f2fd; padding: 12px; border-radius: 6px; border-left: 4px solid #2196f3;">
+                <label style="margin-bottom: 8px; color: #1565c0; font-weight: 600;">📋 当前Cron表达式</label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <code id="current_cron" style="flex: 1; background: white; padding: 10px; border-radius: 4px; font-size: 16px; color: #d32f2f;">未设置</code>
+                    <button type="button" class="btn btn-small" onclick="copyCron()" style="background: #2196f3; color: white;">📋 复制</button>
+                </div>
+                <small id="cron_description" style="display: block; margin-top: 8px; color: #1565c0;">请选择执行频率或输入Cron表达式</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">✓ 创建任务</button>
+                <a href="{{ url_for('main.scheduled_tasks') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.form-container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+
+.form-text {
+    display: block;
+    margin-top: 5px;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.cron-examples {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.cron-examples h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.example-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.example-item {
+    padding: 12px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.example-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+}
+
+.example-item code {
+    display: block;
+    font-size: 14px;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.example-item span {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+}
+</style>
+
+<script>
+// Cron表达式描述映射
+const cronDescriptions = {
+    '*/5 * * * *': '每5分钟执行一次',
+    '*/10 * * * *': '每10分钟执行一次',
+    '*/15 * * * *': '每15分钟执行一次',
+    '*/30 * * * *': '每30分钟执行一次',
+    '0 * * * *': '每小时执行一次',
+    '0 */2 * * *': '每2小时执行一次',
+    '0 */3 * * *': '每3小时执行一次',
+    '0 */6 * * *': '每6小时执行一次',
+    '0 */12 * * *': '每12小时执行一次',
+    '0 0 * * *': '每天凌晨0:00执行',
+    '0 2 * * *': '每天凌晨2:00执行',
+    '0 6 * * *': '每天早上6:00执行',
+    '0 9 * * *': '每天上午9:00执行',
+    '0 12 * * *': '每天中午12:00执行',
+    '0 18 * * *': '每天下午18:00执行',
+    '0 22 * * *': '每天晚上22:00执行',
+    '0 9 * * 1-5': '工作日上午9:00执行',
+    '0 18 * * 1-5': '工作日下午18:00执行',
+    '0 12 * * 1-5': '工作日中午12:00执行',
+    '0 9 * * 1': '每周一上午9:00执行',
+    '0 9 * * 5': '每周五上午9:00执行',
+    '0 0 * * 0': '每周日凌晨0:00执行',
+    '0 0 * * 6': '每周六凌晨0:00执行',
+    '0 0 1 * *': '每月1号凌晨0:00执行',
+    '0 9 1 * *': '每月1号上午9:00执行',
+    '0 0 15 * *': '每月15号凌晨0:00执行',
+    '0 0 L * *': '每月最后一天凌晨0:00执行'
+};
+
+function handleCronModeChange() {
+    const mode = document.getElementById('cron_mode').value;
+    const presetMode = document.getElementById('preset_mode');
+    const customMode = document.getElementById('custom_mode');
+
+    if (mode === 'preset') {
+        presetMode.style.display = 'block';
+        customMode.style.display = 'none';
+        updateCronFromPreset();
+    } else {
+        presetMode.style.display = 'none';
+        customMode.style.display = 'block';
+        updateCurrentCron();
+    }
+}
+
+function updateCronFromPreset() {
+    const preset = document.getElementById('cron_preset').value;
+    const cronInput = document.getElementById('cron_expression');
+
+    if (preset) {
+        cronInput.value = preset;
+        updateCurrentCron(preset);
+    } else {
+        cronInput.value = '';
+        document.getElementById('current_cron').textContent = '未设置';
+        document.getElementById('cron_description').textContent = '请选择执行频率或输入Cron表达式';
+    }
+}
+
+function updateCurrentCron(cron) {
+    const cronInput = document.getElementById('cron_expression');
+    const currentCron = document.getElementById('current_cron');
+    const cronDesc = document.getElementById('cron_description');
+
+    const expression = cron || cronInput.value.trim();
+
+    if (expression) {
+        currentCron.textContent = expression;
+        currentCron.style.color = '#2e7d32';
+
+        // 显示描述
+        if (cronDescriptions[expression]) {
+            cronDesc.textContent = '✓ ' + cronDescriptions[expression];
+            cronDesc.style.color = '#2e7d32';
+        } else {
+            cronDesc.textContent = '⚠️ 自定义表达式，请确保格式正确';
+            cronDesc.style.color = '#f57c00';
+        }
+    } else {
+        currentCron.textContent = '未设置';
+        currentCron.style.color = '#d32f2f';
+        cronDesc.textContent = '请选择执行频率或输入Cron表达式';
+        cronDesc.style.color = '#1565c0';
+    }
+}
+
+function setCron(expression) {
+    document.getElementById('cron_expression').value = expression;
+    updateCurrentCron(expression);
+}
+
+function copyCron() {
+    const cronText = document.getElementById('current_cron').textContent;
+    if (cronText && cronText !== '未设置') {
+        navigator.clipboard.writeText(cronText).then(() => {
+            alert('✓ Cron表达式已复制到剪贴板');
+        }).catch(() => {
+            alert('复制失败，请手动复制');
+        });
+    } else {
+        alert('请先设置Cron表达式');
+    }
+}
+
+// 监听自定义输入框变化
+document.addEventListener('DOMContentLoaded', function() {
+    const cronInput = document.getElementById('cron_expression');
+    if (cronInput) {
+        cronInput.addEventListener('input', function() {
+            updateCurrentCron();
+        });
+    }
+});
+
+document.getElementById('taskForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const cronExpression = document.getElementById('cron_expression').value.trim();
+
+    if (!cronExpression) {
+        alert('❌ 请选择执行频率或输入Cron表达式');
+        return;
+    }
+
+    // 确保cron_expression在表单数据中
+    formData.set('cron_expression', cronExpression);
+
+    fetch('/scheduled-tasks/add', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ 定时任务创建成功！');
+            window.location.href = '/scheduled-tasks';
+        } else {
+            alert('❌ 创建失败: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ 请求失败: ' + error);
+    });
+});
+</script>
+{% endblock %}
+
+

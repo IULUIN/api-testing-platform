@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}使用数据集 - API自动化测试平台{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="/data-sets/{{ data_set.id }}/view" style="color: #3498db; text-decoration: none;">
+        ← 返回数据集详情
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: white;">选择测试用例</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">使用数据集：{{ data_set.name }}</p>
+</div>
+
+<div class="card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+    <h3 style="color: #856404; margin: 0 0 0.5rem 0;">💡 提示</h3>
+    <p style="color: #856404; margin: 0; line-height: 1.8;">
+        选择一个测试用例，系统会使用数据集中的每一行数据执行测试。
+        确保测试用例中使用了变量（如 <code>{{"{{"}}user_id{{"}}"}}</code>），否则所有测试都会使用相同的参数。
+    </p>
+</div>
+
+{% if test_cases %}
+<div style="display: grid; gap: 1.5rem; margin-top: 2rem;">
+    {% for case in test_cases %}
+    <div class="card" style="border-left: 4px solid #3498db;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #333;">{{ case.name }}</h3>
+                <p style="color: #666; margin: 0.5rem 0;">{{ case.description or '无描述' }}</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; font-size: 0.9rem;">
+                    <div>
+                        <p style="margin: 0.3rem 0; color: #888;">
+                            <strong>URL:</strong> <code style="background: #f5f5f5; padding: 0.2rem 0.5rem; border-radius: 3px;">{{ case.url }}</code>
+                        </p>
+                        <p style="margin: 0.3rem 0; color: #888;">
+                            <strong>方法:</strong> <span style="background: #3498db; color: white; padding: 0.2rem 0.6rem; border-radius: 3px;">{{ case.method }}</span>
+                        </p>
+                    </div>
+                    <div>
+                        <p style="margin: 0.3rem 0; color: #888;">
+                            <strong>期望状态码:</strong> {{ case.expected_status }}
+                        </p>
+                        <p style="margin: 0.3rem 0; color: #888;">
+                            <strong>创建时间:</strong> {{ case.created_at }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="runBatchTest({{ data_set.id }}, {{ case.id }}, '{{ case.name }}')"
+                    class="btn btn-success" style="font-size: 1.1rem; padding: 0.7rem 1.5rem; white-space: nowrap;">
+                ▶ 批量执行
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">📝</div>
+    <h3 style="color: #666; margin-bottom: 1rem;">还没有测试用例</h3>
+    <p style="color: #999; margin-bottom: 2rem;">请先创建测试用例</p>
+    <a href="/test-cases/add" class="btn btn-success" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+        ➕ 创建测试用例
+    </a>
+</div>
+{% endif %}
+
+<!-- 执行进度模态框 -->
+<div id="progress-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; max-width: 600px; margin: 100px auto; padding: 2rem; border-radius: 8px;">
+        <h2 style="text-align: center;">⏳ 正在执行批量测试...</h2>
+        <div id="progress-content" style="text-align: center; padding: 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔄</div>
+            <p style="font-size: 1.2rem; color: #555;">请稍候，正在执行测试...</p>
+            <p style="color: #999;">数据量：{{ data_set.data_count }} 行</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function runBatchTest(dataSetId, caseId, caseName) {
+    // 确认执行
+    if (!confirm(`确定要使用数据集批量执行测试用例"${caseName}"吗？\n\n将执行 {{ data_set.data_count }} 次测试。`)) {
+        return;
+    }
+
+    // 显示进度
+    document.getElementById('progress-modal').style.display = 'block';
+
+    // 执行批量测试
+    fetch(`/data-sets/${dataSetId}/run/${caseId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 跳转到结果页面
+            window.location.href = `/batch-results/${data.batch_result_id}`;
+        } else {
+            alert(`执行失败: ${data.error || '未知错误'}`);
+            document.getElementById('progress-modal').style.display = 'none';
+        }
+    })
+    .catch(error => {
+        alert(`请求失败: ${error}`);
+        document.getElementById('progress-modal').style.display = 'none';
+    });
+}
+</script>
+{% endblock %}

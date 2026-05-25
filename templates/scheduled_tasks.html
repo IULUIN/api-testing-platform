@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}定时任务管理{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>⏰ 定时任务管理</h1>
+        <a href="{{ url_for('main.add_scheduled_task') }}" class="btn btn-primary">➕ 添加定时任务</a>
+    </div>
+
+    {% if tasks %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>测试用例</th>
+                    <th>Cron表达式</th>
+                    <th>状态</th>
+                    <th>上次执行</th>
+                    <th>下次执行</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.id }}</td>
+                    <td>
+                        <strong>{{ task.test_case_name }}</strong>
+                        <br>
+                        <small class="text-muted">用例ID: {{ task.test_case_id }}</small>
+                    </td>
+                    <td>
+                        <code>{{ task.cron_expression }}</code>
+                        <br>
+                        <small class="text-muted">{{ get_cron_description(task.cron_expression) }}</small>
+                    </td>
+                    <td>
+                        {% if task.is_active %}
+                        <span class="badge badge-success">✓ 启用</span>
+                        {% else %}
+                        <span class="badge badge-secondary">✗ 禁用</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.last_run_at %}
+                        {{ task.last_run_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        {% else %}
+                        <span class="text-muted">未执行</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.next_run_at and task.is_active %}
+                        {{ task.next_run_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="runTask({{ task.id }})">▶ 立即执行</button>
+                        <button class="btn btn-sm {% if task.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                                onclick="toggleTask({{ task.id }})">
+                            {% if task.is_active %}⏸ 禁用{% else %}▶ 启用{% endif %}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTask({{ task.id }})">🗑 删除</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>📭 还没有定时任务</p>
+        <p>点击"添加定时任务"按钮创建第一个定时任务</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #28a745;
+    color: white;
+}
+
+.badge-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.text-muted {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.empty-state p:first-child {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.empty-state p:last-child {
+    color: #6c757d;
+    font-size: 16px;
+}
+</style>
+
+<script>
+function runTask(taskId) {
+    if (!confirm('确定要立即执行这个任务吗？')) {
+        return;
+    }
+
+    fetch(`/scheduled-tasks/${taskId}/run`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('任务已开始执行，请稍后查看测试结果');
+        } else {
+            alert('执行失败: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('请求失败: ' + error);
+    });
+}
+
+function toggleTask(taskId) {
+    fetch(`/scheduled-tasks/${taskId}/toggle`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('操作失败: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('请求失败: ' + error);
+    });
+}
+
+function deleteTask(taskId) {
+    if (!confirm('确定要删除这个定时任务吗？此操作不可恢复！')) {
+        return;
+    }
+
+    fetch(`/scheduled-tasks/${taskId}/delete`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('删除失败: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('请求失败: ' + error);
+    });
+}
+</script>
+{% endblock %}
+
+
+

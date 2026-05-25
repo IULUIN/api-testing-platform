@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block title %}并发压测{% endblock %}
+
+{% block content %}
+<style>
+/* 页面容器 */
+.lt-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* 顶部横幅 */
+.lt-banner {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(240, 147, 251, 0.3);
+}
+
+.lt-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lt-banner-left h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.lt-banner-left p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.9;
+}
+
+.lt-banner-stats {
+    display: flex;
+    gap: 32px;
+}
+
+.lt-stat-item {
+    text-align: center;
+}
+
+.lt-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.lt-stat-label {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+/* 操作栏 */
+.lt-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+/* 测试卡片网格 */
+.lt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+}
+
+.lt-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    border-top: 4px solid #f093fb;
+    transition: all 0.3s ease;
+}
+
+.lt-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(240, 147, 251, 0.2);
+}
+
+.lt-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.lt-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.lt-card-desc {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+    min-height: 20px;
+}
+
+.lt-params {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.lt-param {
+    display: flex;
+    flex-direction: column;
+}
+
+.lt-param-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.lt-param-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.lt-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 24px;
+}
+</style>
+
+<div class="lt-container">
+    <!-- 顶部横幅 -->
+    <div class="lt-banner">
+        <div class="lt-banner-content">
+            <div class="lt-banner-left">
+                <h1>⚡ 并发压测</h1>
+                <p>模拟高并发场景，测试接口性能和稳定性</p>
+            </div>
+            <div class="lt-banner-stats">
+                <div class="lt-stat-item">
+                    <span class="lt-stat-value">{{ tests|length if tests else 0 }}</span>
+                    <span class="lt-stat-label">压测任务</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="lt-toolbar">
+        <div></div>
+        <a href="/load-tests/add" class="btn btn-success">+ 新建压测</a>
+    </div>
+
+    <!-- 压测列表 -->
+    {% if tests %}
+    <div class="lt-grid">
+    {% for test in tests %}
+    <div class="lt-card">
+        <div class="lt-card-header">
+            <div class="lt-card-title">
+                {{ test.name }}
+                {% if test.is_scheduled %}
+                <span style="background:#28a745;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:8px">⏰ 定时</span>
+                {% endif %}
+            </div>
+            <div style="font-size:24px">⚡</div>
+        </div>
+        <div class="lt-card-desc">
+            {{ test.description or '暂无描述' }}
+            {% if test.is_scheduled and test.schedule_cron %}
+            <br><small style="color:#28a745">⏰ {{ test.schedule_cron }}</small>
+            {% endif %}
+        </div>
+
+        <div class="lt-params">
+            <div class="lt-param">
+                <div class="lt-param-label">并发用户</div>
+                <div class="lt-param-value">{{ test.concurrent_users }} 个</div>
+            </div>
+            <div class="lt-param">
+                <div class="lt-param-label">持续时间</div>
+                <div class="lt-param-value">{{ test.duration }} 秒</div>
+            </div>
+            <div class="lt-param">
+                <div class="lt-param-label">加压时间</div>
+                <div class="lt-param-value">{{ test.ramp_up_time }} 秒</div>
+            </div>
+            <div class="lt-param">
+                <div class="lt-param-label">目标接口</div>
+                <div class="lt-param-value" style="font-size:13px">{{ test.test_case_name }}</div>
+            </div>
+        </div>
+
+        <div class="lt-actions">
+            <button class="btn btn-success btn-small" onclick="runLoadTest({{ test.id }}, this)">▶ 执行</button>
+            <a href="/load-tests/{{ test.id }}/results" class="btn btn-small" style="background:#17a2b8">📊 历史</a>
+            <a href="/load-tests/{{ test.id }}/edit" class="btn btn-small" style="background:#6c757d">✏️ 编辑</a>
+            <form method="post" action="/load-tests/{{ test.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('确认删除压测任务「{{ test.name }}」？')">
+                <button type="submit" class="btn btn-danger btn-small">🗑 删除</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">⚡</div>
+        <h3>还没有压测任务</h3>
+        <p>并发压测可以模拟多用户同时访问，测试接口在高负载下的性能表现</p>
+        <br>
+        <a href="/load-tests/add" class="btn btn-success" style="font-size:16px;padding:12px 32px">+ 新建第一个压测</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function runLoadTest(id, btn) {
+    if (!confirm('确认开始执行压测？这可能需要较长时间。')) {
+        return;
+    }
+    btn.disabled = true;
+    btn.textContent = '执行中…';
+
+    fetch('/load-tests/' + id + '/run', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                // 显示成功提示并跳转
+                btn.textContent = '✓ 完成';
+                setTimeout(() => {
+                    window.location.href = '/load-tests/results/' + d.result_id;
+                }, 500);
+            } else {
+                alert('执行失败：' + d.error);
+                btn.disabled = false;
+                btn.textContent = '▶ 执行';
+            }
+        })
+        .catch(err => {
+            console.error('请求错误:', err);
+            alert('请求失败，请检查服务是否运行');
+            btn.disabled = false;
+            btn.textContent = '▶ 执行';
+        });
+}
+</script>
+{% endblock %}
