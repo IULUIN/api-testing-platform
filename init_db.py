@@ -21,14 +21,14 @@ def create_sample_data():
                 url="https://jsonplaceholder.typicode.com/users/{{user_id}}",
                 method="GET",
                 expected_status=200,
-                description="GET请求示例，获取指定用户信息。批量测试时配合「示例1_查询用户信息.csv」使用，变量：{{user_id}}"
+                description="GET请求示例，获取指定用户信息。批量测试时配合「example1_query_user.csv」使用，变量：{{user_id}}"
             ),
             TestCase(
                 name="示例2：查询文章列表（GET请求）",
                 url="https://jsonplaceholder.typicode.com/posts?userId={{user_id}}",
                 method="GET",
                 expected_status=200,
-                description="GET请求示例，按用户ID查询文章列表。批量测试时配合「示例2_查询文章列表.csv」使用，变量：{{user_id}}"
+                description="GET请求示例，按用户ID查询文章列表。批量测试时配合「example2_query_posts.csv」使用，变量：{{user_id}}"
             ),
             TestCase(
                 name="示例3：创建文章（POST请求）",
@@ -37,7 +37,7 @@ def create_sample_data():
                 headers='{"Content-Type": "application/json"}',
                 body='{"title": "{{title}}", "body": "{{content}}", "userId": {{user_id}}}',
                 expected_status=201,
-                description="POST请求示例，创建新文章。批量测试时配合「示例3_创建文章.csv」使用，变量：{{title}}、{{content}}、{{user_id}}"
+                description="POST请求示例，创建新文章。批量测试时配合「example3_create_post.csv」使用，变量：{{title}}、{{content}}、{{user_id}}"
             )
         ]
 

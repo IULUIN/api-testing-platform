@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}无数据 - API测试平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="empty-state">
+        <div class="empty-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+        </div>
+        <h2>暂无数据</h2>
+        <p>{{ message if message else '暂无可用的测试结果数据' }}</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">返回首页</a>
+    </div>
+</div>
+
+<style>
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+.empty-icon {
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+.empty-state h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+.empty-state p {
+    color: #666;
+    margin-bottom: 20px;
+}
+.btn-primary {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
+.btn-primary:hover {
+    opacity: 0.9;
+}
+</style>
+{% endblock %}
