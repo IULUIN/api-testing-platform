@@ -70,10 +70,12 @@ api-testing-platform/
 │   ├── scheduler.py           # 定时任务
 │   └── utils.py               # 工具函数
 ├── templates/                  # HTML 模板
-├── data/samples/               # 示例数据
-├── scripts/                    # 辅助脚本
+├── sample_datasets/            # 示例数据集
 ├── config.py                   # 配置文件
 ├── run.py                      # 启动入口
+├── init_db.py                  # 数据库初始化
+├── start.bat                   # Windows 启动脚本
+├── quick-start.bat             # Windows 快速启动脚本
 └── requirements.txt            # 依赖清单
 ```
 
