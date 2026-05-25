@@ -1,6 +1,12 @@
 """
 数据库初始化脚本
 """
+import os
+import sys
+
+# 添加项目根目录到 Python 路径
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.models import init_db, get_session, TestCase
 from datetime import datetime
 

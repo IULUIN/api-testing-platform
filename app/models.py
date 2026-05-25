@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, F
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from flask_login import UserMixin
-import config
+from app import config
 import bcrypt
 
 Base = declarative_base()

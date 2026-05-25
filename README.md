@@ -57,8 +57,12 @@ python run.py
 
 ```
 api-testing-platform/
+├── README.md                   # 项目说明
+├── requirements.txt            # 依赖清单
+│
 ├── app/                        # 应用代码
 │   ├── __init__.py            # 应用初始化
+│   ├── config.py              # 配置文件
 │   ├── models.py              # 数据模型
 │   ├── views.py               # 路由视图
 │   ├── auth.py                # 用户认证
@@ -69,14 +73,23 @@ api-testing-platform/
 │   ├── smart_assertion.py     # 智能断言
 │   ├── scheduler.py           # 定时任务
 │   └── utils.py               # 工具函数
+│
 ├── templates/                  # HTML 模板
 ├── sample_datasets/            # 示例数据集
-├── config.py                   # 配置文件
-├── run.py                      # 启动入口
-├── init_db.py                  # 数据库初始化
-├── start.bat                   # Windows 启动脚本
-├── quick-start.bat             # Windows 快速启动脚本
-└── requirements.txt            # 依赖清单
+│
+├── scripts/                    # 启动脚本
+│   ├── start.bat              # Windows 启动
+│   ├── quick-start.bat        # Windows 快速启动
+│   ├── run.py                 # Python 启动入口
+│   └── start.py               # 启动向导
+│
+├── tools/                      # 工具脚本
+│   ├── init_db.py             # 数据库初始化
+│   └── mock_server.py         # Mock 服务器
+│
+└── docker/                     # Docker 配置
+    ├── Dockerfile
+    └── docker-compose.yml
 ```
 
 ## 技术栈

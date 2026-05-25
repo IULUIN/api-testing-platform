@@ -3,7 +3,7 @@ Flask应用初始化 - 简化版，避免循环依赖
 """
 from flask import Flask
 from flask_login import LoginManager
-import config
+from app import config
 import os
 import atexit
 import json
