@@ -21,7 +21,7 @@
         }
 
         .navbar {
-            background: #2c3e50;
+            background: #1e293b;
             color: white;
             padding: 1rem 2rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -32,17 +32,73 @@
             margin-bottom: 0.5rem;
         }
 
+        .navbar nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            align-items: center;
+        }
+
         .navbar nav a {
             color: white;
             text-decoration: none;
-            margin-right: 1.5rem;
             padding: 0.5rem 1rem;
             border-radius: 4px;
-            transition: background 0.3s;
+            transition: all 0.2s;
+            font-size: 1rem;
+            border-left: 3px solid transparent;
         }
 
         .navbar nav a:hover {
             background: rgba(255,255,255,0.1);
+        }
+
+        /* 导航按钮颜色 */
+        .nav-home { border-left-color: #3b82f6; }
+        .nav-home:hover { background: rgba(59,130,246,0.15); }
+
+        .nav-test { border-left-color: #06b6d4; }
+        .nav-test:hover { background: rgba(6,182,212,0.15); }
+
+        .nav-data { border-left-color: #8b5cf6; }
+        .nav-data:hover { background: rgba(139,92,246,0.15); }
+
+        .nav-env { border-left-color: #10b981; }
+        .nav-env:hover { background: rgba(16,185,129,0.15); }
+
+        .nav-task { border-left-color: #eab308; }
+        .nav-task:hover { background: rgba(234,179,8,0.15); }
+
+        .nav-scene { border-left-color: #f97316; }
+        .nav-scene:hover { background: rgba(249,115,22,0.15); }
+
+        .nav-load { border-left-color: #ef4444; }
+        .nav-load:hover { background: rgba(239,68,68,0.15); }
+
+        .nav-report { border-left-color: #14b8a6; }
+        .nav-report:hover { background: rgba(20,184,166,0.15); }
+
+        .nav-perf { border-left-color: #ec4899; }
+        .nav-perf:hover { background: rgba(236,72,153,0.15); }
+
+        .nav-examples {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-left-color: transparent;
+            font-weight: bold;
+        }
+        .nav-examples:hover {
+            opacity: 0.9;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .nav-login {
+            background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+            border-left-color: transparent;
+            font-weight: bold;
+        }
+        .nav-login:hover {
+            opacity: 0.9;
+            background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
         }
 
         .container {
@@ -61,13 +117,13 @@
 
         .card h2 {
             margin-bottom: 1rem;
-            color: #2c3e50;
+            color: #1e293b;
         }
 
         .btn {
             display: inline-block;
             padding: 0.5rem 1rem;
-            background: #3498db;
+            background: #3b82f6;
             color: white;
             text-decoration: none;
             border-radius: 4px;
@@ -77,23 +133,23 @@
         }
 
         .btn:hover {
-            background: #2980b9;
+            background: #2563eb;
         }
 
         .btn-success {
-            background: #27ae60;
+            background: #10b981;
         }
 
         .btn-success:hover {
-            background: #229954;
+            background: #059669;
         }
 
         .btn-danger {
-            background: #e74c3c;
+            background: #ef4444;
         }
 
         .btn-danger:hover {
-            background: #c0392b;
+            background: #dc2626;
         }
 
         .btn-small {
@@ -119,17 +175,17 @@
         }
 
         .status-success {
-            color: #27ae60;
+            color: #10b981;
             font-weight: bold;
         }
 
         .status-failed {
-            color: #e74c3c;
+            color: #ef4444;
             font-weight: bold;
         }
 
         .status-error {
-            color: #f39c12;
+            color: #f59e0b;
             font-weight: bold;
         }
 
@@ -176,7 +232,7 @@
         .stat-card h3 {
             font-size: 2rem;
             margin-bottom: 0.5rem;
-            color: #3498db;
+            color: #3b82f6;
         }
 
         .stat-card p {
@@ -189,21 +245,21 @@
     <div class="navbar">
         <h1>🚀 API自动化测试平台</h1>
         <nav>
-            <a href="/">首页</a>
-            <a href="/test-cases">测试用例</a>
-            <a href="/data-sets">数据集</a>
-            <a href="/environments">环境</a>
-            <a href="/scheduled-tasks">⏰ 定时任务</a>
-            <a href="/scenarios">🎬 场景编排</a>
-            <a href="/load-tests">⚡ 并发压测</a>
-            <a href="/reports">测试报告</a>
-            <a href="/performance-report">📊 性能报告</a>
-            <a href="/examples" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: bold;">📚 教程中心</a>
+            <a href="/" class="nav-home">首页</a>
+            <a href="/test-cases" class="nav-test">测试用例</a>
+            <a href="/data-sets" class="nav-data">数据集</a>
+            <a href="/environments" class="nav-env">环境</a>
+            <a href="/scheduled-tasks" class="nav-task">⏰ 定时任务</a>
+            <a href="/scenarios" class="nav-scene">🎬 场景编排</a>
+            <a href="/load-tests" class="nav-load">⚡ 并发压测</a>
+            <a href="/reports" class="nav-report">测试报告</a>
+            <a href="/performance-report" class="nav-perf">📊 性能报告</a>
+            <a href="/examples" class="nav-examples">📚 教程中心</a>
             {% if current_user.is_authenticated %}
                 <span style="margin-left: 1rem; color: #ecf0f1; font-size: 0.95rem;">👋 {{ current_user.username }}</span>
                 <a href="{{ url_for('auth.logout') }}" style="margin-left: 0.5rem; color: #ecf0f1; text-decoration: none;">退出</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" style="margin-left: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: bold;">登录</a>
+                <a href="{{ url_for('auth.login') }}" class="nav-login" style="margin-left: 0.5rem;">登录</a>
             {% endif %}
         </nav>
     </div>
