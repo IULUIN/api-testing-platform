@@ -49,9 +49,6 @@ echo.
 echo   Starting service, do not close this window...
 echo.
 
-ping -n 3 127.0.0.1 >nul 2>&1
-start http://127.0.0.1:5000
-
 python scripts/run.py
 
 echo.
