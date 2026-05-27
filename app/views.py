@@ -195,7 +195,7 @@ def index():
                              total_results=total_results,
                              stats=stats,
                              recent_results=recent_results,
-                             current_user=current_user_info)
+                             user_info=current_user_info)
     finally:
         session.close()
 
