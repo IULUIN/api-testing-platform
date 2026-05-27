@@ -35,15 +35,42 @@
         .navbar nav a {
             color: white;
             text-decoration: none;
-            margin-right: 1.5rem;
-            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.3rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 4px;
-            transition: background 0.3s;
+            transition: all 0.2s;
+            font-size: 0.95rem;
         }
 
         .navbar nav a:hover {
-            background: rgba(255,255,255,0.1);
+            filter: brightness(1.2);
         }
+
+        /* 导航按钮颜色 */
+        .nav-test { background: rgba(52, 152, 219, 0.25); }
+        .nav-test:hover { background: rgba(52, 152, 219, 0.4); }
+
+        .nav-data { background: rgba(155, 89, 182, 0.25); }
+        .nav-data:hover { background: rgba(155, 89, 182, 0.4); }
+
+        .nav-env { background: rgba(46, 204, 113, 0.25); }
+        .nav-env:hover { background: rgba(46, 204, 113, 0.4); }
+
+        .nav-task { background: rgba(241, 196, 15, 0.25); }
+        .nav-task:hover { background: rgba(241, 196, 15, 0.4); }
+
+        .nav-scene { background: rgba(230, 126, 34, 0.25); }
+        .nav-scene:hover { background: rgba(230, 126, 34, 0.4); }
+
+        .nav-load { background: rgba(231, 76, 60, 0.25); }
+        .nav-load:hover { background: rgba(231, 76, 60, 0.4); }
+
+        .nav-report { background: rgba(26, 188, 156, 0.25); }
+        .nav-report:hover { background: rgba(26, 188, 156, 0.4); }
+
+        .nav-perf { background: rgba(232, 67, 147, 0.25); }
+        .nav-perf:hover { background: rgba(232, 67, 147, 0.4); }
 
         .container {
             max-width: 1200px;
@@ -190,20 +217,20 @@
         <h1>🚀 API自动化测试平台</h1>
         <nav>
             <a href="/">首页</a>
-            <a href="/test-cases">测试用例</a>
-            <a href="/data-sets">数据集</a>
-            <a href="/environments">环境</a>
-            <a href="/scheduled-tasks">⏰ 定时任务</a>
-            <a href="/scenarios">🎬 场景编排</a>
-            <a href="/load-tests">⚡ 并发压测</a>
-            <a href="/reports">测试报告</a>
-            <a href="/performance-report">📊 性能报告</a>
-            <a href="/examples" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: bold;">📚 教程中心</a>
+            <a href="/test-cases" class="nav-test">测试用例</a>
+            <a href="/data-sets" class="nav-data">数据集</a>
+            <a href="/environments" class="nav-env">环境</a>
+            <a href="/scheduled-tasks" class="nav-task">⏰ 定时任务</a>
+            <a href="/scenarios" class="nav-scene">🎬 场景编排</a>
+            <a href="/load-tests" class="nav-load">⚡ 并发压测</a>
+            <a href="/reports" class="nav-report">测试报告</a>
+            <a href="/performance-report" class="nav-perf">📊 性能报告</a>
+            <a href="/examples" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">📚 教程中心</a>
             {% if current_user.is_authenticated %}
                 <span style="margin-left: 1rem; color: #ecf0f1; font-size: 0.95rem;">👋 {{ current_user.username }}</span>
                 <a href="{{ url_for('auth.logout') }}" style="margin-left: 0.5rem; color: #ecf0f1; text-decoration: none;">退出</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" style="margin-left: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: bold;">登录</a>
+                <a href="{{ url_for('auth.login') }}" style="margin-left: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">登录</a>
             {% endif %}
         </nav>
     </div>
