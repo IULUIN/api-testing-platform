@@ -32,45 +32,37 @@
             margin-bottom: 0.5rem;
         }
 
+        .navbar nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
         .navbar nav a {
             color: white;
             text-decoration: none;
-            margin-right: 0.5rem;
-            margin-bottom: 0.3rem;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
+            padding: 0.45rem 0.85rem;
+            border-radius: 5px;
             transition: all 0.2s;
             font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .navbar nav a:hover {
-            filter: brightness(1.2);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* 导航按钮颜色 */
-        .nav-test { background: rgba(52, 152, 219, 0.25); }
-        .nav-test:hover { background: rgba(52, 152, 219, 0.4); }
-
-        .nav-data { background: rgba(155, 89, 182, 0.25); }
-        .nav-data:hover { background: rgba(155, 89, 182, 0.4); }
-
-        .nav-env { background: rgba(46, 204, 113, 0.25); }
-        .nav-env:hover { background: rgba(46, 204, 113, 0.4); }
-
-        .nav-task { background: rgba(241, 196, 15, 0.25); }
-        .nav-task:hover { background: rgba(241, 196, 15, 0.4); }
-
-        .nav-scene { background: rgba(230, 126, 34, 0.25); }
-        .nav-scene:hover { background: rgba(230, 126, 34, 0.4); }
-
-        .nav-load { background: rgba(231, 76, 60, 0.25); }
-        .nav-load:hover { background: rgba(231, 76, 60, 0.4); }
-
-        .nav-report { background: rgba(26, 188, 156, 0.25); }
-        .nav-report:hover { background: rgba(26, 188, 156, 0.4); }
-
-        .nav-perf { background: rgba(232, 67, 147, 0.25); }
-        .nav-perf:hover { background: rgba(232, 67, 147, 0.4); }
+        /* 导航按钮渐变颜色 */
+        .nav-test { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .nav-data { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .nav-env { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .nav-task { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+        .nav-scene { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .nav-load { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .nav-report { background: linear-gradient(135deg, #1abc9c, #16a085); }
+        .nav-perf { background: linear-gradient(135deg, #e84393, #d63384); }
 
         .container {
             max-width: 1200px;
@@ -225,12 +217,12 @@
             <a href="/load-tests" class="nav-load">⚡ 并发压测</a>
             <a href="/reports" class="nav-report">测试报告</a>
             <a href="/performance-report" class="nav-perf">📊 性能报告</a>
-            <a href="/examples" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">📚 教程中心</a>
+            <a href="/examples" style="background: linear-gradient(135deg, #667eea, #764ba2); font-weight: bold;">📚 教程中心</a>
             {% if current_user.is_authenticated %}
-                <span style="margin-left: 1rem; color: #ecf0f1; font-size: 0.95rem;">👋 {{ current_user.username }}</span>
-                <a href="{{ url_for('auth.logout') }}" style="margin-left: 0.5rem; color: #ecf0f1; text-decoration: none;">退出</a>
+                <span style="margin-left: 0.5rem; color: #ecf0f1; font-size: 0.95rem;">👋 {{ current_user.username }}</span>
+                <a href="{{ url_for('auth.logout') }}" style="color: #ecf0f1; text-decoration: none;">退出</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" style="margin-left: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">登录</a>
+                <a href="{{ url_for('auth.login') }}" style="background: linear-gradient(135deg, #667eea, #764ba2); font-weight: bold;">登录</a>
             {% endif %}
         </nav>
     </div>
